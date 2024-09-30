@@ -1,0 +1,385 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> components/NavBar.js</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="ImageCard.html">ImageCard</a></li><li><a href="VideoCard.html">VideoCard</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActivityIndicator">ActivityIndicator</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#AppNavigator">AppNavigator</a></li><li><a href="global.html#BookmarkCard">BookmarkCard</a></li><li><a href="global.html#BookmarkNoteCard">BookmarkNoteCard</a></li><li><a href="global.html#ChatCard">ChatCard</a></li><li><a href="global.html#CourseDetailsScreen">CourseDetailsScreen</a></li><li><a href="global.html#IFrameCard">IFrameCard</a></li><li><a href="global.html#LessonScreen">LessonScreen</a></li><li><a href="global.html#MobileAppNavigator">MobileAppNavigator</a></li><li><a href="global.html#NavBar">NavBar</a></li><li><a href="global.html#NotificationCard">NotificationCard</a></li><li><a href="global.html#ProblemComp">ProblemComp</a></li><li><a href="global.html#TextCard">TextCard</a></li><li><a href="global.html#client">client</a></li><li><a href="global.html#new_request">new_request</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#setAxiosDefaults">setAxiosDefaults</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>components/NavBar.js</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState } from "react";
+import { useHistory, Link } from "react-router-dom";
+// import CourseService from "../services/course";
+import { NavDropdown } from "react-bootstrap";
+// import { dashboardURL } from "../config/apiConstant";
+import { helpSupportURL } from "../config/apiConstant";
+import ActivityIndicator from "./ActivityIndicator";
+import { useSelector } from "react-redux";
+import { selectCourse } from "../store/slices/courseSlice";
+import store from "../store";
+import { setOpenOverlay } from "../store/slices/settingsSlice";
+import { Modal } from 'react-bootstrap';
+import SettingsForm from './SettingsForm';
+
+/**
+ * NavBar component serves as the navigation bar for the application.
+ *
+ * @component
+ * @param {Object} props - The props for the component.
+ * @param {Object} props.data - Data to be rendered in the navbar.
+ * @param {Object} props.nav - Navigation data.
+ * @param {Function} props.onCurrentIdChange - Function to handle the movement to the current content ID.
+ * @param {Function} props.getPageBookmarkNote - Function to fetch bookmarks for the current page.
+ * @param {string} props.content_id - The current content ID.
+ * @param {Function} props.setContentId - Function to update the content ID.
+ * @returns {JSX.Element} - Rendered NavBar component.
+ */
+
+const NavBar = ({
+  data,
+  nav,
+  onCurrentIdChange,
+  getPageBookmarkNote,
+  // course_id,
+  content_id,
+  setContentId,
+}) => {
+  // const [navShow, setNavShow] = useState();
+  const [loading, setLoading] = useState(false);
+  const student_info = JSON.parse(localStorage.getItem("student_info"));
+  const {
+    course: { data: courseBasic },
+  } = useSelector(selectCourse);
+  const settings = useSelector((state) => state.settings.settings)
+
+  const handleShow = () => {
+    store.dispatch(setOpenOverlay(true))
+  };
+
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShowModal = () => setShow(true);
+
+  var url = window.location.href;
+  const course_id = url.split("/")[3];
+  // const content_id = url.split("/")[5];
+  const callingApp = localStorage.getItem("calling_app");
+
+  // const [content_id, setContentId] = useState(url.split("/")[5]);
+
+  const history = useHistory();
+  // const course = []
+  // localStorage.getItem("single_course") !== null
+  //   ? JSON.parse(localStorage.getItem("single_course"))[0]
+  //   : [];
+  const course_pages = courseBasic?.course_data?.page_belonging_to_course;
+  // console.log(":::::-course-:::::",course)
+  // console.log('courseBasic', courseBasic?.course_data?.page_belonging_to_course)
+  const handleNext = () => {
+    // console.log(content_id);
+    // let courseOutline = JSON.parse(localStorage.getItem("course_outline"));
+
+    let index = course_pages?.filter((el, i) => {
+      return el.id === content_id;
+    });
+
+    // console.log("handleNext - index", index); //TO REMOVE
+
+    let newIndex = course_pages?.indexOf(index[0]) + 1;
+    // console.log("newIndex - index", newIndex); //TO REMOVE
+
+    let nextId = course_pages[newIndex]?.id;
+    // console.log("nextId - index", nextId); //TO REMOVE
+
+    if (nextId !== undefined) {
+      // let next = unmapped_arr[new_id][0];
+      setContentId(nextId);
+      onCurrentIdChange(nextId);
+      getPageBookmarkNote(nextId);
+      // let section =
+      //   course_pages[newIndex].page_type === "LE"
+      //     ? "lesson"
+      //     : course_pages[newIndex].page_type === "SE"
+      //     ? "section"
+      //     : "subsection";
+      history.push({
+        pathname: `/${course_id}/${callingApp}/lesson/${nextId}`,
+      });
+    }
+    // else {
+    //   history.push({ pathname: `/${course_id}` });
+    // }
+  };
+
+  const handlePrev = () => {
+    // let courseOutline = JSON.parse(localStorage.getItem("course_outline"));
+    let index = course_pages?.filter((el, i) => {
+      return el.id === content_id;
+    });
+
+    let newIndex = course_pages?.indexOf(index[0]) - 1;
+
+    console.log("newIndex", newIndex);
+
+    let nextId = course_pages[newIndex]?.id;
+
+    if (nextId !== undefined) {
+      // let next = unmapped_arr[new_id][0];
+      setContentId(nextId);
+      onCurrentIdChange(nextId);
+      getPageBookmarkNote(nextId);
+      // let section =
+      //   course_pages[newIndex].page_type === "LE"
+      //     ? "lesson"
+      //     : course_pages[newIndex].page_type === "SE"
+      //     ? "section"
+      //     : "subsection";
+      history.push({
+        // `/${course_id}/${callingApp}/lesson/${nextId}`
+        pathname: `/${course_id}/${callingApp}/lesson/${nextId}`,
+      });
+    }
+
+    // else {
+    //   history.push({ pathname: `/${course_id}` });
+    // }
+  };
+
+  const handleDashboard = () => {
+    setLoading(true);
+    let dashboardURL = localStorage.getItem("redirect_url");
+    localStorage.clear();
+    window.location.href = dashboardURL;
+  };
+
+  return (
+    &lt;div>
+      &lt;ActivityIndicator visible={loading} />
+      &lt;div className="container">
+        
+        &lt;header className="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between border-bottom px-4 fixed-top bg-white">
+       {settings.leftWindowSettings.available === 'overlay' &amp;&amp; &lt;button variant="primary" className="border-0 bg-transparent" onClick={handleShow}>
+        &lt;i class="bi bi-list fs-3">&lt;/i>
+      &lt;/button>}
+          &lt;Link
+            to="/"
+            className="d-flex px-2 border-1 border-end align-items-center mb-2 mb-lg-0 float-end"
+          >
+            &lt;img
+              src="/Questence-logo.png"
+              style={{ height: "30px" }}
+              alt="Logo"
+            />
+          &lt;/Link>
+
+          &lt;ul className="nav col-md-8 px-2 col-lg-auto me-lg-auto pl-2 mb-2 mt-3 justify-content-center mb-md-0 fw-bold">
+            {courseBasic?.course_data?.id !== undefined &amp;&amp; (
+              &lt;li>
+                &lt;p>
+                  &lt;Link
+                    to={`/${courseBasic?.course_data?.id}`}
+                    className="text-dark text-decoration-none"
+                  >
+                    {courseBasic?.course_data?.code}:{" "}
+                    {courseBasic?.course_data?.name}
+                  &lt;/Link>
+                &lt;/p>
+              &lt;/li>
+            )}
+          &lt;/ul>
+
+          &lt;div className="col-md-4 ">
+            &lt;div className="text-end">
+              &lt;button
+                className="btn mx-2 rounded-pill"
+                style={{
+                  border: "solid 1.5px #00873d",
+                  color: "#000",
+                  fontWeight: "700",
+                }}
+                onClick={() => handlePrev()}
+              >
+                &lt;i className="bi bi-chevron-left">&lt;/i> Prev
+              &lt;/button>
+              &lt;button
+                className="btn btn-q-primary mx-2 rounded-pill"
+                onClick={() => handleNext()}
+                style={{ backgroundColor: "#00873d", color: "#fff" }}
+              >
+                Next &lt;i className="bi bi-chevron-right">&lt;/i>
+              &lt;/button>
+              &lt;div className="d-inline-block">
+                &lt;div className="">
+                  &lt;>
+                    &lt;NavDropdown
+                      title={
+                        &lt;>
+                          &lt;img
+                            className="rounded-circle img-fluid"
+                            style={{
+                              width: "41px",
+                              height: "41px",
+                              border: "solid 2px #00873d",
+                            }}
+                            alt="circle-avatar"
+                            src="https://images.pexels.com/photos/5212336/pexels-photo-5212336.jpeg?cs=srgb&amp;dl=pexels-max-fischer-5212336.jpg&amp;fm=jpg"
+                          />
+                        &lt;/>
+                      }
+                      id="basic-nav-dropdownx"
+                      // show={navShow}
+                      // onMouseEnter={() => setNavShow(true)}
+                      // onMouseLeave={() => setNavShow(false)}
+                      className="btn text-white btn-sm me-2 "
+                    >
+                      &lt;NavDropdown.Header>
+                        {student_info &amp;&amp;
+                          student_info.first_name +
+                            " " +
+                            student_info.last_name}
+                        &lt;br />
+                        {student_info &amp;&amp; student_info.email}
+                      &lt;/NavDropdown.Header>
+                      &lt;NavDropdown.Divider />
+                      &lt;NavDropdown.Item onClick={handleDashboard} href="#">
+                        Dashboard
+                      &lt;/NavDropdown.Item>
+                      &lt;NavDropdown.Item href={helpSupportURL}>
+                        Help/Support
+                      &lt;/NavDropdown.Item>
+                      &lt;NavDropdown.Item href="#" onClick={handleShowModal}>
+                        Settings
+                      &lt;/NavDropdown.Item>
+                    &lt;/NavDropdown> 
+                  &lt;/>
+                  
+                &lt;/div>
+              &lt;/div>
+            &lt;/div>
+          &lt;/div>
+        &lt;/header>
+      &lt;/div>
+
+      &lt;Modal size='lg' show={show} onHide={handleClose}>
+        &lt;Modal.Header closeButton>
+          &lt;Modal.Title>Settings&lt;/Modal.Title>
+        &lt;/Modal.Header>
+        &lt;Modal.Body>
+         &lt;SettingsForm closeModal={handleClose}/>
+        &lt;/Modal.Body>
+      &lt;/Modal>
+      
+    &lt;/div>
+  );
+};
+
+export default NavBar;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

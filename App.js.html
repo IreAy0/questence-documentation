@@ -1,0 +1,413 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> App.js</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="ImageCard.html">ImageCard</a></li><li><a href="VideoCard.html">VideoCard</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActivityIndicator">ActivityIndicator</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#AppNavigator">AppNavigator</a></li><li><a href="global.html#BookmarkCard">BookmarkCard</a></li><li><a href="global.html#BookmarkNoteCard">BookmarkNoteCard</a></li><li><a href="global.html#ChatCard">ChatCard</a></li><li><a href="global.html#CourseDetailsScreen">CourseDetailsScreen</a></li><li><a href="global.html#IFrameCard">IFrameCard</a></li><li><a href="global.html#LessonScreen">LessonScreen</a></li><li><a href="global.html#MobileAppNavigator">MobileAppNavigator</a></li><li><a href="global.html#NavBar">NavBar</a></li><li><a href="global.html#NotificationCard">NotificationCard</a></li><li><a href="global.html#ProblemComp">ProblemComp</a></li><li><a href="global.html#TextCard">TextCard</a></li><li><a href="global.html#client">client</a></li><li><a href="global.html#new_request">new_request</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#setAxiosDefaults">setAxiosDefaults</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>App.js</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect } from "react";
+import { useLocation } from 'react-router-dom';
+
+import "./App.css";
+import MobileAppNavigator from "./navigation/MobileAppNavigator";
+import AppNavigator from "./navigation/AppNavigator";
+import CoursesService from "../src/services/courses";
+import CommentsService from "../src/services/comments";
+import BookmarkNoteService from "./services/bookmarks_notes";
+import ActivityIndicator from "./components/ActivityIndicator";
+import store from "./store";
+import { selectCourse, setCourse } from "./store/slices/courseSlice";
+import { useSelector } from "react-redux";
+
+/**
+ * App Component
+ *
+ * This component manages the navigation and state for an LMS or Authoring platform.
+ * It dynamically handles the URL patterns for both LMS (with `app_calling = 12`) and Authoring platform (with `app_calling = 13`).
+ * Based on the detected calling application, it fetches data such as course content, comments, and bookmarks/notes.
+ * The component is also responsive, adjusting between desktop and mobile views.
+ *
+ * - LMS URL format: `{lms-url}/12/{course_id}/{enrollment_id}/{page_id}/{token}?redirect_url={redirect_url}`
+ * - Authoring URL format: `{lms-url}/13/{course_id}/{page_id}/{token}?redirect_url={redirect_url}`
+ *
+ * The component saves key data (e.g., `lms_token`, `course_id`, `enrollment_id`, and `redirect_url`) in `localStorage`
+ * and handles responsive behavior for desktop and mobile devices.
+ *
+ * @example
+ * // URL example for LMS:
+ * // http://localhost:3000/12/course_id/enrollment_id/page_id/token?redirect_url=http://redirect.url
+ *
+ * // URL example for Authoring:
+ * // http://localhost:3000/13/course_id/page_id/token?redirect_url=http://redirect.url
+ *
+ * @returns {JSX.Element} The App component that switches between MobileAppNavigator and AppNavigator based on screen size.
+ */
+
+const App = () => {
+  const [data, setData] = useState([]);
+  const [courseContent, setCourseContent] = useState([]);
+  const [course_id, setCourseId] = useState(null);
+  const [isDesktop, setDesktop] = useState(window.innerWidth > 992);
+  const [loading, setLoading] = useState(false);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [updateSessions, setUpdateSessions] = useState(false);
+
+  const [comments, setComments] = useState([]);
+  const course = useSelector(selectCourse);
+
+  const [bookmarksNotes, setBookmarksNotes] = useState([]);
+  const [pageBookmarkNote, setPageBookmarkNote] = useState({});
+
+  // const url = window.location.href;
+  // const callingApp = url?.split("/")[3]
+  const url = window.location.href;
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  // Extract the calling application to determine if it's LMS or Authoring
+  const callingApp = url?.split("/")[3];
+
+  // Common extraction
+  let redirectUrl = queryParams.get('redirect_url');
+  let lmsToken, token, courseId, enrollmentId, page_id;
+
+  if (callingApp === "12") { // LMS URL pattern
+    courseId = url?.split("/")[4];
+    enrollmentId = url?.split("/")[5];
+    page_id = url?.split("/")[6];
+    const lmsToken = url?.split("/")[7];
+    token = lmsToken?.split("?")[0]; // Extract token without query params
+  } else if (callingApp === "13") { // Authoring URL pattern
+    courseId = url?.split("/")[4];
+    page_id = url?.split("/")[5];
+    enrollmentId = "only";
+    const lmsToken = url?.split("/")[6];
+    token = lmsToken?.split("?")[0]; // Extract token without query params
+  } else {
+    console.error("Unknown URL pattern");
+  }
+
+  const updateMedia = () => {
+    setDesktop(window.innerWidth > 1450);
+  };
+
+    // Function to store course content in localStorage
+    const storeCourseContentInLocalStorage = (content) => {
+      localStorage.setItem("course_content", JSON.stringify(content));
+  };
+  
+  const handleCourseId = (course_id) => {
+    setCourseId(course_id);
+    if (!localStorage.getItem("course_id")) {
+      localStorage.setItem("course_id", course_id);
+    }
+    // setData(JSON.parse(course_id));
+  };
+
+  const getPageBookmarkNoteForPage = (page_id) => {
+    //This function handles getting the bookmark/ note for the selected page Id
+    let bookmarkNote = bookmarksNotes.filter((el, i) => {
+      return el.p_id === page_id;
+    });
+    setPageBookmarkNote(bookmarkNote[0] ?? {});
+    // return bookmarkNote;
+  };
+
+  const fetchAllBookmarksNotes = () => {
+    BookmarkNoteService.get_all_bookmarksNotes()
+      .then((response) => {
+        let bookmarksNotesResponse = response;
+        setBookmarksNotes(bookmarksNotesResponse);
+        // setLoading(false);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
+  /**
+   * Fetch course content based on course, enrollment, and calling application data.
+   * @param {string} course_id - The ID of the course.
+   * @param {string} enrollment_id - The ID of the enrollment.
+   * @param {string} page_id - The ID of the page.
+   * @param {string} calling_app - The calling application identifier.
+   */
+  async function fetchData(course_id, enrollment_id, page_id, calling_app) {
+    // console.log("fetchData: ", enrollment_id);
+    // CoursesService.get_course_outline(enrollment_id)
+    //   .then((response) => {
+    //     // console.log("get_course_outline", response);
+    //     localStorage.setItem("course_outline", JSON.stringify(response));
+    //     setLoading(false);
+    //     setData(response);
+    //   })
+    //   .catch(function (error) {
+    //     console.log(error);
+    //     setLoading(false);
+    //   });
+
+    // CoursesService.get_course_contents(enrollment_id)
+    //   .then((response) => {
+    //     // setCourseContent(response);
+    //     // console.log("get_course_contents", response);
+    //     localStorage.setItem("course_contents", JSON.stringify(response));
+    //     setLoading(false);
+    //   })
+    //   .catch(function (error) {
+    //     console.log(error);
+    //   });
+
+    CoursesService.get_course_content(course_id, enrollment_id, page_id, calling_app)
+      .then(res => {
+        store.dispatch(setCourse(res))
+        
+      })
+
+
+
+    // CoursesService.get_single_course(course_id)
+    //   .then((response) => {
+    //     // console.log("get_single_course", response);
+    //     setCourseContent(response);
+    //     // console.log("get_single_course", response);
+    //     localStorage.setItem("single_course", JSON.stringify(response));
+    //     setLoading(false);
+    //   })
+    //   .catch(function (error) {
+    //     console.log(error);
+    //   });
+
+    // fetchAllBookmarksNotes();
+  }
+
+    /**
+   * Fetch course content for the authoring platform.
+   * @param {string} course_id - The ID of the course.
+   * @param {string} page_id - The ID of the page.
+   */
+  async function fetchAuthorData(course_id, page_id) {
+
+    CoursesService.get_course_content_author(course_id, page_id)
+      .then(res => {
+        store.dispatch(setCourse(res))
+      })
+  }
+
+   /**
+   * Fetch comments for a specific page.
+   * @param {string} page_id - The ID of the page.
+   */
+  async function fetchPageComment(page_id) {
+    // console.log("Load Comments For Page: ", page_id);
+    setComments([]);
+    // if (lmsToken) {
+    setLoadingComments(true);
+    CommentsService.get_page_comment(page_id)
+      .then((response) => {
+        // console.log("get_page_comment", response);
+        setComments(response[0]?.comment_belonging_to_page);
+        setLoadingComments(false);
+      })
+      .catch(function (error) {
+        console.log("get_page_comment error - App.js");
+        console.log(error);
+        setLoadingComments(false);
+      });
+  }
+
+  useEffect(() => {
+    if (redirectUrl) {
+      setLoading(true);
+      setUpdateSessions(true);
+      localStorage.setItem("lms_token", token);
+      localStorage.setItem("enrollment_id", enrollmentId);
+      localStorage.setItem("redirect_url", redirectUrl);
+      localStorage.setItem('course_id', courseId)
+      localStorage.setItem('page_id', page_id)
+      localStorage.setItem('calling_app', callingApp)
+      setUpdateSessions(false);
+    }
+    setLoading(true);
+
+    const hasRequiredData = (
+      (data.length &lt; 1 &amp;&amp; localStorage.getItem("lms_token") &amp;&amp; localStorage.getItem("enrollment_id")) ||
+      (localStorage.getItem("course_id") &amp;&amp; localStorage.getItem("lms_token") &amp;&amp; localStorage.getItem("enrollment_id") &amp;&amp; localStorage.getItem("calling_app") &amp;&amp; localStorage.getItem("page_id"))
+    );
+    
+    // const redirectU rl = true; // assume this is how you get the redirectUrl value
+    
+    if (hasRequiredData) {
+      const callingApp = localStorage.getItem("calling_app");
+      if (callingApp === "12" &amp;&amp; redirectUrl) {
+        fetchData(localStorage.getItem("course_id"), localStorage.getItem("enrollment_id"), localStorage.getItem("page_id"));
+      } else if (callingApp === "13" &amp;&amp; redirectUrl) {
+        fetchAuthorData(localStorage.getItem("course_id"), localStorage.getItem("page_id"));
+      } else {
+        // handle the case where redirectUrl is false
+      }
+      setLoading(false);
+    } else {
+      setLoading(false);
+    }
+  }, [courseId, lmsToken, updateSessions, enrollmentId, token, redirectUrl, page_id, callingApp]);
+
+  useEffect(() => {
+    const { course: { data } } = course
+    setCourseContent(data?.course_data?.page_belonging_to_course);
+  }, [course])
+
+  useEffect(() => {
+    window.addEventListener("resize", updateMedia);
+    return () => window.removeEventListener("resize", updateMedia);
+  });
+
+  return (
+    &lt;>
+      &lt;ActivityIndicator visible={loading} />
+      {data !== undefined &amp;&amp; (
+        &lt;>
+          {!isDesktop ? (
+            &lt;div className="d-block d-md-none">
+              &lt;MobileAppNavigator
+                course_id={course_id}
+                data={data}
+                content={courseContent}
+                onHandleCourseId={handleCourseId}
+              // pageComment={fetchPageComment}
+              // comments={comments}
+              />
+            &lt;/div>
+          ) : (
+            &lt;div className="d-none d-md-block">
+              &lt;AppNavigator
+                course_id={course_id}
+                data={data}
+                content={courseContent}
+                onHandleCourseId={handleCourseId}
+                pageCommentFn={fetchPageComment}
+                comments={comments}
+                getPageBookmarkNote={getPageBookmarkNoteForPage}
+                loadBookmarkNotesFn={fetchAllBookmarksNotes}
+                bookmarksNotes={bookmarksNotes}
+                pageBookmarkNote={pageBookmarkNote}
+              />
+            &lt;/div>
+          )}
+        &lt;/>
+      )}
+    &lt;/>
+  );
+};
+
+export default App;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

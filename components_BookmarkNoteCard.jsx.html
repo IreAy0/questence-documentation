@@ -1,0 +1,342 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> components/BookmarkNoteCard.jsx</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="ImageCard.html">ImageCard</a></li><li><a href="VideoCard.html">VideoCard</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActivityIndicator">ActivityIndicator</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#AppNavigator">AppNavigator</a></li><li><a href="global.html#BookmarkCard">BookmarkCard</a></li><li><a href="global.html#BookmarkNoteCard">BookmarkNoteCard</a></li><li><a href="global.html#ChatCard">ChatCard</a></li><li><a href="global.html#CourseDetailsScreen">CourseDetailsScreen</a></li><li><a href="global.html#IFrameCard">IFrameCard</a></li><li><a href="global.html#LessonScreen">LessonScreen</a></li><li><a href="global.html#MobileAppNavigator">MobileAppNavigator</a></li><li><a href="global.html#NavBar">NavBar</a></li><li><a href="global.html#NotificationCard">NotificationCard</a></li><li><a href="global.html#ProblemComp">ProblemComp</a></li><li><a href="global.html#TextCard">TextCard</a></li><li><a href="global.html#client">client</a></li><li><a href="global.html#new_request">new_request</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#setAxiosDefaults">setAxiosDefaults</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>components/BookmarkNoteCard.jsx</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* eslint-disable no-unused-vars */
+import { useState } from "react";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Button from "react-bootstrap/Button";
+import Tooltip from "react-bootstrap/Tooltip";
+import dayjs from "dayjs";
+import BookmarkNoteService from "../services/bookmarks_notes";
+import ModalAddBookmarkNote from "./ModalAddBookmarkNote";
+import ModalShowAllBookmarksNotes from "./ModalShowAllBookmarksNotes";
+var relativeTime = require("dayjs/plugin/relativeTime");
+var updateLocale = require("dayjs/plugin/updateLocale");
+
+/**
+ * BookmarkNoteCard component
+ *
+ * Renders a card displaying a bookmark note with options to edit, delete, and view all bookmarks/notes.
+ *
+ * @param {object} bookmarkNoteData - Bookmark note data object
+ * @param {array} allBookmarksNotesData - Array of all bookmarks/notes data
+ * @param {function} loadAllBookmarksNotes - Function to load all bookmarks/notes
+ *
+ * @returns {JSX.Element} BookmarkNoteCard component
+ */
+
+const BookmarkNoteCard = ({
+  bookmarkNoteData,
+  allBookmarksNotesData,
+  loadAllBookmarksNotes,
+}) => {
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [showAllBookmarsNotes, setShowAllBookmarsNotes] = useState(false);
+
+  const closeModal = () => setShowModal(false);
+  const closeNewModal = () => setShowNewModal(false);
+  const closeAllBookmarsNotesModal = () => setShowAllBookmarsNotes(false);
+
+  dayjs.extend(relativeTime);
+  dayjs.extend(updateLocale);
+
+  dayjs.updateLocale("en", {
+    relativeTime: {
+      future: "in %s",
+      past: "%s ago",
+      s: "few sec",
+      m: "1 min",
+      mm: "%d min",
+      h: "1 hr",
+      hh: "%d hrs",
+      d: "1 day",
+      dd: "%d days",
+      M: "a mon",
+      MM: "%d mon",
+      y: "a yr",
+      yy: "%d yrs",
+    },
+  });
+
+   /**
+   * Delete bookmark note
+   *
+   * @async
+   * @returns {Promise&lt;void>}
+   */
+
+  async function deleteBookmarkNote() {
+    // console.log("postComment");
+    setLoading(true);
+    BookmarkNoteService.delete_page_bookmarkNote(bookmarkNoteData?.id)
+      .then((response) => {
+        console.log("delete_page_bookmarkNote", response);
+        loadAllBookmarksNotes();
+        setLoading(false);
+      })
+      .catch(function (error) {
+        console.log("delete_page_bookmarkNote error");
+        console.log(error);
+        setLoading(false);
+      });
+  }
+
+   /**
+   * Edit bookmark note
+   *
+   * @async
+   * @returns {Promise&lt;void>}
+   */
+  async function editBookmarkNote() {
+    setShowModal(true);
+  }
+
+  /**
+   * Open new modal to add a new bookmark/note
+   *
+   * @async
+   * @returns {Promise&lt;void>}
+   */
+  async function openNewModal() {
+    setShowNewModal(true);
+  }
+
+  /**
+   * Open modal to show all bookmarks/notes
+   *
+   * @async
+   * @returns {Promise&lt;void>}
+   */
+  async function openAllBookmarsNotes() {
+    setShowAllBookmarsNotes(true);
+  }
+
+  return (
+    &lt;>
+      &lt;ModalShowAllBookmarksNotes
+        showModal={showAllBookmarsNotes}
+        closeModal={closeAllBookmarsNotesModal}
+        allBookmarksNotesData={allBookmarksNotesData}
+      />
+
+      &lt;ModalAddBookmarkNote
+        showModal={showModal}
+        closeModal={closeModal}
+        noteID={bookmarkNoteData?.id}
+        note={bookmarkNoteData?.note}
+        loadBookmarkNote={loadAllBookmarksNotes}
+      />
+
+      &lt;ModalAddBookmarkNote
+        showModal={showNewModal}
+        closeModal={closeNewModal}
+        loadBookmarkNote={loadAllBookmarksNotes}
+      />
+
+      &lt;div className="mb-2">
+        &lt;div
+          className="mb-2"
+          style={{ display: "Flex", justifyContent: "space-between" }}
+        >
+          &lt;div>
+            &lt;span>
+              &lt;OverlayTrigger
+                overlay={
+                  &lt;Tooltip id="tooltip-disabled">
+                    See All Your Bookmarks/Notes
+                  &lt;/Tooltip>
+                }
+              >
+                &lt;small onClick={() => openAllBookmarsNotes()}>
+                  &lt;span className="text-success cursor-pointer fw-bold">
+                    See All &lt;i className="bi bi-chevron-right">&lt;/i>
+                  &lt;/span>
+                &lt;/small>
+              &lt;/OverlayTrigger>
+            &lt;/span>
+          &lt;/div>
+
+          {bookmarkNoteData?.id &amp;&amp; (
+            &lt;div>
+              &lt;span>
+                &lt;OverlayTrigger
+                  overlay={&lt;Tooltip id="tooltip-disabled">Edit Note&lt;/Tooltip>}
+                >
+                  &lt;i
+                    className="bi bi-pencil-square me-2 text-success cursor-pointer"
+                    onClick={() => editBookmarkNote()}
+                  >&lt;/i>
+                &lt;/OverlayTrigger>
+              &lt;/span>
+
+              &lt;span>
+                &lt;OverlayTrigger
+                  overlay={&lt;Tooltip id="tooltip-disabled">Delete Note&lt;/Tooltip>}
+                >
+                  &lt;i
+                    className="bi bi-trash text-danger cursor-pointer"
+                    onClick={() => deleteBookmarkNote()}
+                  >&lt;/i>
+                &lt;/OverlayTrigger>
+              &lt;/span>
+            &lt;/div>
+          )}
+        &lt;/div>
+
+        {bookmarkNoteData?.note?.length > 0 &amp;&amp; (
+          &lt;div className="comment-box p-2">
+            &lt;small style={{ whiteSpace: "pre-line" }}>
+              {bookmarkNoteData?.note}
+            &lt;/small>
+          &lt;/div>
+        )}
+
+        {bookmarkNoteData?.note?.length === 0 &amp;&amp; (
+          &lt;div className="m-5 p-3 text-center comment-box">
+            &lt;i className="bi bi-bookmark-check-fill fs-1 text-success">&lt;/i>
+            &lt;div>
+              &lt;p className="fw-bold fs-11">Page Bookmarked&lt;/p>
+            &lt;/div>
+          &lt;/div>
+        )}
+
+        {!bookmarkNoteData?.id &amp;&amp; (
+          &lt;div className="mt-5 pt-5 text-center">
+            &lt;i className="bi bi-bookmark-x-fill fs-1 text-muted">&lt;/i>
+            &lt;div>
+              &lt;p className="text-muted fs-11">
+                No bookmark/ notes available
+                &lt;br /> for this page
+              &lt;/p>
+            &lt;/div>
+            &lt;Button
+              variant="outline-success"
+              size="sm"
+              onClick={() => openNewModal()}
+            >
+              New Bookmark/ Note
+            &lt;/Button>
+          &lt;/div>
+        )}
+      &lt;/div>
+    &lt;/>
+  );
+};
+
+export default BookmarkNoteCard;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

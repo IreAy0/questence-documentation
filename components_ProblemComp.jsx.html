@@ -1,0 +1,842 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> components/ProblemComp.jsx</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="ImageCard.html">ImageCard</a></li><li><a href="VideoCard.html">VideoCard</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActivityIndicator">ActivityIndicator</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#AppNavigator">AppNavigator</a></li><li><a href="global.html#BookmarkCard">BookmarkCard</a></li><li><a href="global.html#BookmarkNoteCard">BookmarkNoteCard</a></li><li><a href="global.html#ChatCard">ChatCard</a></li><li><a href="global.html#CourseDetailsScreen">CourseDetailsScreen</a></li><li><a href="global.html#IFrameCard">IFrameCard</a></li><li><a href="global.html#LessonScreen">LessonScreen</a></li><li><a href="global.html#MobileAppNavigator">MobileAppNavigator</a></li><li><a href="global.html#NavBar">NavBar</a></li><li><a href="global.html#NotificationCard">NotificationCard</a></li><li><a href="global.html#ProblemComp">ProblemComp</a></li><li><a href="global.html#TextCard">TextCard</a></li><li><a href="global.html#client">client</a></li><li><a href="global.html#new_request">new_request</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#setAxiosDefaults">setAxiosDefaults</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>components/ProblemComp.jsx</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from "react";
+import QuestionsService from "../services/questions";
+import Lottie from "lottie-react";
+import markingAnimationData from "../animations/marking.json";
+import {
+  Box,
+  Button,
+  Modal,
+  useMantineTheme,
+  Flex,
+  Paper,
+  Text,
+  Avatar,
+  Badge,
+  Divider,
+  ActionIcon,
+  Tooltip,
+  Loader,
+} from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { useForm } from "@mantine/form";
+import Alert from "react-bootstrap/Alert";
+import {
+  RadioFieldComponent,
+  TextFieldComponent,
+  NumberFieldComponent,
+  DropdownFieldComponent,
+  TextAreaFieldComponent,
+  CheckFieldComponent,
+  BooleanFieldComponent,
+  DateTimeFieldComponent,
+  FileUploadFieldComponent,
+  RankingFieldComponent,
+} from "./FormElements";
+import TextCard from "./TextCard";
+import ModalShowAnswers from "./ModalShowAnswers";
+
+/**
+ * ProblemComp component to manage and render an exercise with questions.
+ *
+ * @param {Object} props - Component props.
+ * @param {Object} props.content - Content data for the exercise.
+ * @param {Object} props.course - Course information.
+ * @param {Object} props.formInitialData - Initial data for the form.
+ * 
+ * @returns {JSX.Element} The rendered component.
+ */
+
+const ProblemComp = ({ content, course, formInitialData }) => {
+  const [loading, setLoading] = useState(false);
+  const [answers, setAnswers] = useState([]);
+  const [userAnswers, setUserAnswers] = useState([]);
+  // const [totalScore, setTotalScore] = useState(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
+  const [markResponse, setMarkResponse] = useState(false);
+  const [opened, { open, close }] = useDisclosure(false);
+  const [openedReset, reset] = useDisclosure(false);
+  const [openedShowAnswers, showAnswers] = useDisclosure(false);
+  const [currentResponseLoading, setCurrentResponseLoading] = useState(false);
+  const [currentResponse, setCurrentResponse] = useState(null);
+  const [c_a_Answer, setC_A_Answer] = useState();
+  const [c_a_Answer_Loading, setC_A_Answer_Loading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [showingCurrentResponse, setShowingCurrentResponse] = useState(false);
+  const [seconds, setSeconds] = useState(60); // ---------- used to hold the coundown timer ---------- //
+
+  const theme = useMantineTheme();
+
+  // console.log("ProblemComp", content, course);
+  // console.log("Total Score", content);
+  // console.log("content?.response[0].c_ans", content?.response[0].c_ans);
+  // console.log("markResponse", markResponse);
+
+  console.log("content", content.question_belonging_to_exercise, course);
+
+  const questionsForm = useForm({
+    initialValues: formInitialData,
+  });
+
+  // useEffect(() => {
+  //   // Set up the timer
+  //   const timer = setInterval(() => {
+  //     setSeconds((prevSeconds) => prevSeconds - 1);
+  //   }, 1000);
+
+  //   // Exit early if countdown is finished
+  //   if (seconds &lt;= 0) {
+  //     markExercise(questionsForm.values);
+  //     clearInterval(timer);
+  //   }
+
+  //   // Clean up the timer
+  //   return () => clearInterval(timer);
+  // }, [seconds]);
+
+  // Format the remaining time (e.g., “00:05:10” for 5 minutes and 10 seconds)
+  const formatTime = (timeInSeconds) => {
+    const minutes = Math.floor(timeInSeconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const seconds = (timeInSeconds % 60).toString().padStart(2, "0");
+    console.log("formatTime", `${minutes}:${seconds}`);
+    return `${minutes}:${seconds}`;
+  };
+
+  useEffect(() => {
+    getInitial_C_A_Answer(content.id);
+  }, []);
+
+  const startExercise = () => {
+    questionsForm.reset();
+    setMarkResponse(false);
+    setIsSubmitted(false);
+    setShowingCurrentResponse(false);
+    setIsStarted(true);
+  };
+
+  const showQuestionHint = (hint) => {
+    if (content?.exercise_show_hint) {
+      return hint;
+    } else {
+      return null;
+    }
+  };
+
+  async function markExercise(answers) {
+    setLoading(true);
+    QuestionsService.mark_exercise(answers)
+      .then((response) => {
+        console.log("mark_exercise", response);
+
+        setC_A_Answer((currentCAAnswer) => ({
+          ...currentCAAnswer,
+          c_ans: response?.c_ans,
+          a_ans: response?.a_ans,
+        }));
+
+        setMarkResponse(response);
+        setIsSubmitted(true);
+        setIsStarted(false);
+        setLoading(false);
+      })
+      .catch(function (error) {
+        console.log("mark_exercise error");
+        console.log(error);
+        setLoading(false);
+      });
+  }
+
+  const resetExercise = (c_id) => {
+    setResetLoading(true);
+
+    QuestionsService.reset_exercise(c_id, localStorage.getItem("enrollment_id"))
+      .then((response) => {
+        console.log("reset_exercise", response);
+
+        setC_A_Answer((currentCAAnswer) => ({
+          ...currentCAAnswer,
+          c_ans: response?.c_ans,
+        }));
+
+        questionsForm.reset();
+        setMarkResponse(false);
+        setIsSubmitted(false);
+        setIsStarted(false);
+        reset.close();
+
+        setResetLoading(false);
+      })
+      .catch(function (error) {
+        console.log("reset_exercise error");
+        console.log(error);
+        reset.close();
+        setResetLoading(false);
+      });
+  };
+
+  const onFormSubmit = (answers) => {
+    // console.log("Student Answers: ", answers);
+    markExercise(answers);
+  };
+
+  const showCurrentResponse = (c_id) => {
+    setCurrentResponseLoading(true);
+
+    // open();
+
+    QuestionsService.show_current_response(
+      c_id,
+      localStorage.getItem("enrollment_id")
+    )
+      .then((response) => {
+        console.log("show_current_response", response);
+
+        setMarkResponse(response);
+        // setCurrentResponse(response);
+        setShowingCurrentResponse(true);
+        setCurrentResponse(null);
+        setCurrentResponseLoading(false);
+      })
+      .catch(function (error) {
+        console.log("show_current_response error");
+        console.log(error);
+        setCurrentResponseLoading(false);
+      });
+  };
+
+  // Get the A_Ans and C_Ans when the exercise component loads
+  const getInitial_C_A_Answer = (c_id) => {
+    setC_A_Answer_Loading(true);
+    QuestionsService.show_current_response(
+      c_id,
+      localStorage.getItem("enrollment_id")
+    )
+      .then((response) => {
+        console.log("getInitial_C_A_Answer", {
+          a_ans: response?.a_ans,
+          c_ans: response?.c_ans,
+        });
+
+        setC_A_Answer({ a_ans: response?.a_ans, c_ans: response?.c_ans });
+        setC_A_Answer_Loading(false);
+
+        console.log("c_a_Answer", c_a_Answer);
+      })
+      .catch(function (error) {
+        console.log("getInitial_C_A_Answer error");
+        console.log(error);
+        setC_A_Answer_Loading(false);
+      });
+  };
+
+  const getQuestionAnswerByNo = (questionNo) => {
+    return markResponse?.answer_belonging_to_response?.find(
+      (element) => element?.q_no === questionNo
+    );
+  };
+
+  const cancelExercise = () => {
+    questionsForm.reset();
+    // setIsSubmitted(false);
+    setIsStarted(false);
+  };
+
+  const calculateTotalScore = (marks) =>
+    marks.reduce((total, mark) => (mark.right ? total + mark.score : total), 0);
+
+  const getFormElement = (
+    elementSchema,
+    index,
+    answers,
+    userAnswers,
+    component_id
+  ) => {
+    const options = [
+      elementSchema.option1,
+      elementSchema.option2,
+      elementSchema.option3,
+      elementSchema.option4,
+      elementSchema.option5,
+    ];
+    const props = {
+      form: questionsForm,
+      name: elementSchema.question_no,
+      label: elementSchema.question,
+      score: elementSchema?.allocated_score,
+      hint: showQuestionHint(elementSchema?.hint),
+      fileType: elementSchema?.file_type ?? null,
+      rankingType: elementSchema?.ranking_type ?? null,
+      id: elementSchema.id,
+      showAnswersOnly: false,
+      isStarted: isStarted,
+      answerResponse: getQuestionAnswerByNo(index),
+      options,
+      index: index,
+      answers,
+      userAnswers,
+      component_id,
+    };
+
+    if (elementSchema.type === "TE") {
+      return &lt;TextFieldComponent {...props} />;
+    }
+
+    if (elementSchema.type === "NU") {
+      return &lt;NumberFieldComponent {...props} />;
+    }
+
+    if (elementSchema.type === "ES" || elementSchema.type === "DI") {
+      return &lt;TextAreaFieldComponent {...props} />;
+    }
+
+    if (elementSchema.type === "CH") {
+      return &lt;CheckFieldComponent {...props} />;
+    }
+
+    if (elementSchema.type === "BO") {
+      return &lt;BooleanFieldComponent {...props} />;
+    }
+
+    if (elementSchema.type === "DT") {
+      return &lt;DateTimeFieldComponent {...props} />;
+    }
+
+    if (elementSchema.type === "UF") {
+      return &lt;FileUploadFieldComponent {...props} />;
+    }
+
+    if (elementSchema.type === "RK") {
+      return &lt;RankingFieldComponent {...props} />;
+    }
+
+    if (elementSchema.type === "DR") {
+      return &lt;DropdownFieldComponent {...props} />;
+    }
+
+    if (elementSchema.type === "RA") {
+      return &lt;RadioFieldComponent {...props} />;
+    }
+  };
+  return (
+    &lt;div className="card px-2 py-2 shadow-sm mt-3">
+      &lt;ModalShowAnswers
+        opened={openedShowAnswers}
+        closeFn={showAnswers.close}
+        content={content}
+        course={course}
+        formInitialData={formInitialData}
+      />
+
+      &lt;Modal
+        opened={openedReset}
+        onClose={() => reset.close()}
+        withCloseButton={!resetLoading}
+        closeOnClickOutside={!resetLoading}
+        closeOnEscape={!resetLoading}
+        centered
+        title="Reset Exercise?"
+        size="md"
+      >
+        {resetLoading &amp;&amp; (
+          &lt;Flex
+            // gap="md"
+            justify="center"
+            align="center"
+            direction="column"
+            wrap="nowrap"
+          >
+            &lt;>
+              &lt;Text>Resetting Exercise&lt;/Text>
+              &lt;br />
+              &lt;Loader color="cyan" />
+            &lt;/>
+          &lt;/Flex>
+        )}
+
+        {!resetLoading &amp;&amp; (
+          &lt;>
+            &lt;Text>
+              Are you sure you want to reset the exercise? Your prevoius score
+              will be lost.
+            &lt;/Text>
+
+            &lt;Flex
+              gap="md"
+              justify="center"
+              align="center"
+              direction="row"
+              wrap="no-wrap"
+              m="md"
+            >
+              &lt;Button color="red" mr="md" onClick={() => reset.close()}>
+                Cancel
+              &lt;/Button>
+              &lt;Button
+                type="submit"
+                color="teal"
+                onClick={() => resetExercise(content?.id)}
+              >
+                Reset
+              &lt;/Button>
+            &lt;/Flex>
+          &lt;/>
+        )}
+      &lt;/Modal>
+
+      {/* &lt;ActivityIndicator visible={loading} /> */}
+      &lt;Button variant="outline-success"   onClick={() => startExercise()} className="fw-bold">
+        Start Exercise
+      &lt;/Button>
+
+      &lt;>
+        {!isStarted &amp;&amp; (
+          &lt;Flex
+            gap="sm"
+            justify="flex-end"
+            align="center"
+            direction="row"
+            // wrap="wrap"
+          >
+            {(c_a_Answer_Loading || !c_a_Answer) &amp;&amp; (
+              &lt;Button
+                fullWidth
+                variant="default"
+                color="cyan"
+                disabled={c_a_Answer_Loading}
+                onClick={() => getInitial_C_A_Answer(content.id)}
+              >
+                {c_a_Answer_Loading ? (
+                  &lt;Loader color="cyan" size="xs" />
+                ) : (
+                  "Check Status"
+                )}
+              &lt;/Button>
+            )}
+            {c_a_Answer?.a_ans &amp;&amp; !c_a_Answer?.c_ans &amp;&amp; (
+              // {(markResponse == false || content?.response[0].c_ans == false) &amp;&amp; (
+              &lt;Button
+                fullWidth
+                variant="default"
+                color="cyan"
+                disabled={!c_a_Answer?.a_ans}
+                onClick={() => startExercise()}
+              >
+                Start Exercise
+              &lt;/Button>
+            )}
+            {c_a_Answer?.c_ans &amp;&amp; (
+              // {(markResponse == false || content?.response[0].c_ans == false) &amp;&amp; (
+              &lt;Button
+                fullWidth
+                variant="default"
+                color="cyan"
+                disabled={!content?.response[0].a_ans}
+                onClick={() => reset.open()}
+              >
+                Reset Exercise
+              &lt;/Button>
+            )}
+
+            &lt;Tooltip label="Show Current Response">
+              &lt;ActionIcon
+                color="indigo"
+                size="lg"
+                variant="filled"
+                p="sm"
+                disabled={
+                  c_a_Answer_Loading ||
+                  !c_a_Answer?.c_ans ||
+                  showingCurrentResponse
+                }
+                onClick={() => showCurrentResponse(content.id)}
+              >
+                &lt;i
+                  className="bi bi-journal-check"
+                  style={{ fontSize: "1.5" }}
+                >&lt;/i>
+              &lt;/ActionIcon>
+            &lt;/Tooltip>
+            &lt;Tooltip label="Show Answers">
+              &lt;ActionIcon
+                color="cyan"
+                size="lg"
+                variant="filled"
+                p="sm"
+                disabled={!content?.exercise_show_answer}
+                onClick={() => showAnswers.open()}
+              >
+                &lt;i className="bi bi-eyeglasses" style={{ fontSize: "1.5" }}>&lt;/i>
+              &lt;/ActionIcon>
+            &lt;/Tooltip>
+          &lt;/Flex>
+        )}
+
+        {/* Timer Counter Down if the exercise is started and there's duration avalable */}
+        {isStarted === true &amp;&amp; content?.exercise_duration &amp;&amp; (
+          &lt;Alert variant="info" className="mb-2 p-1">
+            &lt;p className="text-center m-0">
+              Time Left:{" "}
+              &lt;b>
+                {formatTime(seconds)}
+                {/* &lt;Countdown
+                  date={Date.now() + content?.exercise_duration * 60000}
+                  onComplete={() => console.log("Time Up")}
+                /> */}
+              &lt;/b>
+            &lt;/p>
+          &lt;/Alert>
+        )}
+
+        &lt;TextCard content={content.exercise_overview} />
+
+        &lt;Box>
+          {(loading || currentResponseLoading) &amp;&amp; (
+            &lt;Modal
+              opened={loading || currentResponseLoading}
+              withCloseButton={false}
+              centered
+              size="xs"
+              closeOnClickOutside={false}
+              closeOnEscape={false}
+              overlayProps={{
+                color:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[9]
+                    : theme.colors.gray[2],
+                opacity: 0.55,
+                blur: 3,
+              }}
+              styles={{
+                content: {
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                },
+              }}
+            >
+              &lt;Flex
+                gap="md"
+                justify="center"
+                align="center"
+                direction="column"
+                wrap="wrap"
+              >
+                {loading &amp;&amp; (
+                  &lt;>
+                    &lt;Lottie
+                      style={{ height: 130, width: 130 }}
+                      animationData={markingAnimationData}
+                      loop={true}
+                    />
+
+                    &lt;p className="text-center fw-bold">
+                      Submitting your answers
+                      &lt;br />
+                      Please wait...
+                    &lt;/p>
+                  &lt;/>
+                )}
+
+                {currentResponseLoading &amp;&amp; (
+                  &lt;p className="text-center fw-bold">
+                    Loading your current response
+                    &lt;br />
+                    Please wait...
+                  &lt;/p>
+                )}
+              &lt;/Flex>
+            &lt;/Modal>
+          )}
+
+          {showingCurrentResponse &amp;&amp; (
+            &lt;>
+              {content?.question_belonging_to_exercise?.length > 0 &amp;&amp;
+                content?.question_belonging_to_exercise?.map((question, index) => (
+                  &lt;div key={index}>
+                    {getFormElement(
+                      question,
+                      index + 1,
+                      answers,
+                      userAnswers,
+                      content.id
+                    )}
+                  &lt;/div>
+                ))}
+
+              {markResponse &amp;&amp; (
+                &lt;>
+                  &lt;Divider my="lg" />
+                  &lt;Badge color="cyan" size="xl">
+                    YOUR SCORE:{" "}
+                    {markResponse?.answer_belonging_to_response
+                      ? `${calculateTotalScore(
+                          markResponse?.answer_belonging_to_response
+                        )}/${content?.exercise_total_score}`
+                      : 0}
+                  &lt;/Badge>
+                &lt;/>
+              )}
+            &lt;/>
+          )}
+
+          {!showingCurrentResponse &amp;&amp; (
+            &lt;>
+              &lt;form
+                onSubmit={questionsForm.onSubmit((values) =>
+                  onFormSubmit(values)
+                )}
+              >
+                {content?.question_belonging_to_exercise?.length > 0 &amp;&amp;
+                  content.question_belonging_to_exercise?.map((question, index) => (
+                    &lt;div key={index}>
+                      {getFormElement(
+                        question,
+                        index + 1,
+                        answers,
+                        userAnswers,
+                        content.id
+                      )}
+                    &lt;/div>
+                  ))}
+
+                &lt;>
+                  {(isStarted || markResponse) &amp;&amp; &lt;Divider my="lg" />}
+
+                  &lt;Flex
+                    gap="md"
+                    justify="space-between"
+                    align="center"
+                    direction="row"
+                    wrap="nowrap"
+                  >
+                    {(isStarted || markResponse) &amp;&amp; (
+                      &lt;Badge color="cyan" size="xl">
+                        YOUR SCORE:{" "}
+                        {markResponse?.answer_belonging_to_response
+                          ? `${calculateTotalScore(
+                              markResponse?.answer_belonging_to_response
+                            )}/${content?.exercise_total_score}`
+                          : 0}
+                      &lt;/Badge>
+                    )}
+
+                    {isStarted &amp;&amp; (
+                      &lt;div>
+                        &lt;Button
+                          color="red"
+                          mr="md"
+                          onClick={() => cancelExercise()}
+                        >
+                          Cancel Exercise
+                        &lt;/Button>
+                        &lt;Button type="submit" color="teal">
+                          Submit Answer
+                        &lt;/Button>
+                      &lt;/div>
+                    )}
+                  &lt;/Flex>
+                &lt;/>
+              &lt;/form>
+            &lt;/>
+          )}
+        &lt;/Box>
+      &lt;/>
+
+      {/* {isSubmitted &amp;&amp; (
+        &lt;>
+         
+          &lt;Text fz="xl" fw={900} ta="center">
+            RESULTS
+          &lt;/Text>
+          &lt;TextCard content={markResponse?.remark} />
+          &lt;Flex
+            gap="md"
+            justify="center"
+            align="flex-start"
+            direction="row"
+            wrap="wrap"
+          >
+            {markResponse?.answer_belonging_to_response.map((mark) => (
+              &lt;MarkCard markedData={mark} />
+            ))}
+          &lt;/Flex>
+          &lt;div>
+            &lt;Divider my="sm" />
+            &lt;Group position="center" mt="xl" mb="sm">
+              &lt;Button type="submit" color="red">
+                Reset Exercise
+              &lt;/Button>
+              &lt;Button
+                type="submit"
+                color="yellow"
+                disabled={markResponse?.a_ans ? false : true}
+                onClick={() => retryExercise()}
+              >
+                Retry Exercise
+              &lt;/Button>
+            &lt;/Group>
+          &lt;/div>
+        &lt;/>
+      )} */}
+    &lt;/div>
+  );
+};
+
+export default ProblemComp;
+
+const MarkCard = ({ markedData }) => {
+  console.log("markedData", markedData);
+
+  return (
+    &lt;Paper withBorder radius="md" p="xs" key={markedData?.id}>
+      &lt;Flex
+        gap="md"
+        justify="flex-start"
+        align="flex-start"
+        direction="row"
+        wrap="wrap"
+      >
+        &lt;Avatar variant="outline" size="lg">
+          {`Q.${markedData?.q_no}`}
+        &lt;/Avatar>
+
+        &lt;div>
+          {markedData.right ? (
+            &lt;Badge color="teal" size="sm" variant="filled">
+              Correct
+            &lt;/Badge>
+          ) : (
+            &lt;Badge color="red" size="sm" variant="filled">
+              Wrong
+            &lt;/Badge>
+          )}
+          &lt;Text fw={700} size="md">
+            {markedData?.score &lt;= 1
+              ? `${markedData?.score} Mark`
+              : `${markedData?.score} Marks`}
+          &lt;/Text>
+        &lt;/div>
+      &lt;/Flex>
+    &lt;/Paper>
+  );
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

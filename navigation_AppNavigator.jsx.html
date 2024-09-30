@@ -1,0 +1,565 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> navigation/AppNavigator.jsx</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="ImageCard.html">ImageCard</a></li><li><a href="VideoCard.html">VideoCard</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActivityIndicator">ActivityIndicator</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#AppNavigator">AppNavigator</a></li><li><a href="global.html#BookmarkCard">BookmarkCard</a></li><li><a href="global.html#BookmarkNoteCard">BookmarkNoteCard</a></li><li><a href="global.html#ChatCard">ChatCard</a></li><li><a href="global.html#CourseDetailsScreen">CourseDetailsScreen</a></li><li><a href="global.html#IFrameCard">IFrameCard</a></li><li><a href="global.html#LessonScreen">LessonScreen</a></li><li><a href="global.html#MobileAppNavigator">MobileAppNavigator</a></li><li><a href="global.html#NavBar">NavBar</a></li><li><a href="global.html#NotificationCard">NotificationCard</a></li><li><a href="global.html#ProblemComp">ProblemComp</a></li><li><a href="global.html#TextCard">TextCard</a></li><li><a href="global.html#client">client</a></li><li><a href="global.html#new_request">new_request</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#setAxiosDefaults">setAxiosDefaults</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>navigation/AppNavigator.jsx</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { useState } from "react";
+import { Redirect, Route, Switch } from "react-router-dom";
+import { Container, Row, Col, Offcanvas } from "react-bootstrap";
+import NavBar from "../components/NavBar";
+import CourseDetailsScreen from "../screens/CourseDetailsScreen";
+import ActivityIndicator from "../components/ActivityIndicator";
+import ErrorBoundary from "../components/ErrorBoundary";
+import SubsectionScreen from "../screens/SubsectionScreen";
+import SectionScreen from "../screens/SectionScreen";
+import CourseScreen from "../screens/CourseScreen";
+import LessonScreen from "../screens/LessonScreen";
+import UnauthorizedPage from "../screens/UnauthorizedPage";
+import { useSelector } from "react-redux";
+import { selectCourse } from "../store/slices/courseSlice";
+import { dashboardSettings, setOpenOverlay } from "../store/slices/settingsSlice";
+import Footer from "../components/Footer";
+import AdvertWindowScreen from "../screens/AdvertWindowScreen";
+import store from "../store";
+
+/**
+ * AppNavigator component
+ *
+ * This component is the main navigator for the application.
+ * It handles the navigation between different screens and components.
+ *
+ * @param {object} props - The props object passed to the component.
+ * @param {array} props.courses - An array of courses.
+ * @param {object} props.bookmarksNotes - An object containing bookmarks and notes.
+ * @param {function} props.pageBookmarkNote - A function to get the bookmark note for a page.
+ * @param {function} props.loadBookmarkNotesFn - A function to load bookmark notes.
+ * @param {function} props.pageCommentFn - A function to get comments for a page.
+ * @param {object} props.comments - An object containing comments.
+ *
+ * @returns {JSX.Element} The AppNavigator component.
+ */
+
+const AppNavigator = (props) => {
+  const [activeKey, setActivekey] = useState("home");
+  const {
+    course: { data: courseBasic },
+  } = useSelector(selectCourse);
+  const {settings} = useSelector(dashboardSettings)
+  // const {openOverlay} = useSelector(getOpenOverlay)
+  const openOverlay = useSelector((state) => state.settings.openOverlay)
+
+  // const [course_id, setCourse_id] = useState(null);
+
+  const data = courseBasic?.course_data?.page_belonging_to_course;
+
+  const courseId = courseBasic?.course_data?.id;
+  const bookmarksNotes = props.bookmarksNotes;
+  const pageBookmarkNote = props.pageBookmarkNote;
+  const [menuToggle, setMenuToggle] = useState(false);
+  const [currentId, setCurrentId] = useState(null);
+
+  console.log('openOverlay', openOverlay);
+
+  const handleClose = () => {
+    store.dispatch(setOpenOverlay(false))
+  };
+ 
+  const courses = props.courses;
+
+  // ----- Nabigation Functions Starts -----
+
+  var url = window.location.href;
+  const [content_id, setContentId] = useState(url.split("/")[5]);
+
+  const setContentIdContent = (id) => {
+    setContentId(id);
+    handleCommentLoad(id);
+  };
+
+  // ----- Nabigation Functions Ends -----
+
+  // ----- Comment Functions -----
+
+  const comments = props.comments;
+  const pageCommentFn = props.pageCommentFn;
+
+  // ----- Comment Functions -----
+
+  // ----- BookmarkNote Functions -----
+
+  const getPageBookmarkNote = props.getPageBookmarkNote;
+  const loadBookmarkNoteFn = props.loadBookmarkNotesFn;
+
+  // ----- BookmarkNote Functions -----
+
+  const handleLessonId = (lessonId) => {
+    // setLessonId(lessonId);
+  };
+
+  const handleCommentLoad = (page_id) => {
+    pageCommentFn(page_id);
+  };
+
+  const handleBookmarkNoteLoad = (page_id) => {
+    getPageBookmarkNote(page_id);
+  };
+
+  const handleCommmentPress = (key) => {
+    //console.log('Trying to change tab');
+    setActivekey(key);
+    console.log("key", key);
+  };
+
+  const handleCourseId = (course_id) => {
+    props.onHandleCourseId(course_id);
+    localStorage.setItem("single_course", JSON.stringify(course_id));
+  };
+
+  const handleMenuToggle = () => {
+    if (menuToggle !== true) {
+      setMenuToggle(true);
+    } else {
+      setMenuToggle(false);
+    }
+  };
+
+  const handleCurrentIdChange = (currId) => {
+    // console.log("currIdChanged", currId);
+    setCurrentId(currId);
+  };
+
+  return (
+    &lt;div style={{
+      backgroundColor: settings.background_colour,
+    }}  className="">
+      &lt;ActivityIndicator />
+   {&lt;NavBar
+        courses={courses}
+        data={data}
+        // course_id={props.course_id}
+        nav={props.nav}
+        onCurrentIdChange={handleCurrentIdChange}
+        getPageBookmarkNote={handleBookmarkNoteLoad}
+        content_id={content_id}
+        setContentId={setContentIdContent}
+      />}
+      &lt;Container fluid>
+        &lt;Row className="flex-grow-1">
+          &lt;Col className={`
+            ${settings.leftWindowSettings.available === "true"  &amp;&amp; settings.rightWindowSettings.available ?  'col-md-12' : 
+             ( settings.leftWindowSettings.available === "false" ||  !settings.rightWindowSettings.available) ? 'col-md-11 mx-auto' :'col-md-11 mx-auto'
+             }  
+            d-flex position-relative px-0`}>
+            {/* Left Column */}
+         {settings.leftWindowSettings.available === "true"  &amp;&amp; 
+         &lt;Col
+            xs={12}
+            md={5}
+            style={{
+              position: "fixed",
+              width: menuToggle ? "0" : settings.leftWindowSettings.width,
+              height: "100vh",
+              overflowY: menuToggle ? "hidden" : "auto",
+              top: 0,
+              left: 'unset',
+              zIndex: 1000,
+              flex: menuToggle ? 1 : 'unset',
+              backgroundColor: settings.leftWindowSettings.background_colour
+            }}
+            className={"position-fixed  px-0"}
+          >
+            &lt;div
+              className={`${settings.background_colour !== 'white' ? 'border-none' : 'border-end '} pb-5  position-relative font-source_sans  h-100 `}
+              style={{
+                paddingTop: "4rem",
+                fontSize: "14px",
+                borderWidth: settings.background_colour !== 'white' ? '0px; !important' : '1px; !important',
+                borderColor: settings.background_colour !== 'white' ? 'transparent' : 'black',
+              }}
+            >
+              &lt;div className="position-relative">
+              
+                &lt;CourseDetailsScreen
+                  data={data}
+                  activeKey={activeKey}
+                  handleSelect={handleCommmentPress}
+                  show={menuToggle}
+                  currentId={currentId}
+                  onCurrentIdChange={handleCurrentIdChange}
+                  comments={comments}
+                  onPageChange={handleCommentLoad}
+                  content_id={content_id}
+                  setContentId={setContentIdContent}
+                  getPageBookmarkNote={getPageBookmarkNote} //A fn that calls when a page is changes to load a new bookmar/ note  for the slected page
+                  pageBookmarkNote={pageBookmarkNote} // A state that contains the loaded bookmark/ note for a particular page
+                  onBookmarkNoteEditDelete={loadBookmarkNoteFn}
+                  bookmarksNotes={bookmarksNotes}
+                  showComment={settings.leftWindowSettings.tofc.comment}
+                  showNote={settings.leftWindowSettings.tofc.note}
+                  showNotification={settings.leftWindowSettings.tofc.notification}
+                  showAdvert={settings.leftWindowSettings.tofc.advert}
+                  showOutline={settings.leftWindowSettings.tofc.outline}
+                />
+              &lt;/div>
+            &lt;/div>
+          &lt;/Col>}
+
+          {/* Middle Column */}
+         { &lt;Col
+            xs={12}
+            // md={8}
+            md={menuToggle ? { span: 8, offset: 1 } : { span: true }}
+            className=" p-3 pb-0 "
+            style={{
+              marginLeft: menuToggle || settings.leftWindowSettings.available === "false" || settings.leftWindowSettings.available  === 'overlay' ? "" : settings.leftWindowSettings.width,
+              // marginRight: menuToggle || settings.rightWindowSettings.available === false ? "" : settings.rightWindowSettings.width,
+              marginInline: menuToggle ? "auto" : "",
+              transition: "margin 0.3s ease",
+              flex: menuToggle ? 1 : 'unset',
+              
+            }}
+          >
+            &lt;div
+              style={{
+              
+                marginTop: '3rem',
+               
+              }}
+            >
+              {/* Content for the right column */}
+              &lt;div className="bg-transparent">
+                &lt;ErrorBoundary>
+                  &lt;Switch>
+                    &lt;Route
+                      path="/:course_id/:calling_app/lesson/:lesson_id"
+                      render={(props) =>
+                        data &amp;&amp; (
+                          &lt;LessonScreen
+                            onHandleLessonId={handleLessonId}
+                            comments={comments}
+                            data={data}
+                            courseId={courseId}
+                            handleShowComments={handleCommmentPress}
+                            onBookmarkNoteEditDelete={loadBookmarkNoteFn}
+                          />
+                        )
+                      }
+                    />
+                    &lt;Route
+                      path="/:course_id/:calling_app/subsection/:subsection_id"
+                      render={(props) =>
+                        data &amp;&amp; (
+                          &lt;SubsectionScreen
+                            data={data}
+                            courseId={courseId}
+                            courseListings={courses}
+                            {...props}
+                          />
+                        )
+                      }
+                    />
+                    &lt;Route
+                      path="/:course_id/:calling_app/section/:section_id"
+                      render={(props) =>
+                        data ? (
+                          &lt;SectionScreen
+                            data={data}
+                            courseId={courseId}
+                            onHandleCourseId={handleCourseId}
+                            {...props}
+                          />
+                        ) : (
+                          &lt;ActivityIndicator /> // Show a loading indicator while data is fetched
+                        )
+                      }
+                    />
+                    &lt;Route
+                      path="/:course_id"
+                      render={(props) => (
+                        &lt;CourseScreen
+                          data={data}
+                          courseId={courseId}
+                          onHandleCourseId={handleCourseId}
+                          {...props}
+                        />
+                      )}
+                    />
+                    &lt;Route
+                      path="/"
+                      exact
+                      render={(props) => (
+                        &lt;CourseScreen
+                          data={data}
+                          onHandleCourseId={handleCourseId}
+                          {...props}
+                        />
+                      )}
+                    />
+                    &lt;Route
+                      path="/404"
+                      render={(props) => &lt;UnauthorizedPage {...props} />}
+                    />
+                    {/* Add a wildcard route to handle all unknown paths */}
+                    &lt;Route path="*">
+                      &lt;Redirect to="/404" />
+                    &lt;/Route>
+                  &lt;/Switch>
+                &lt;/ErrorBoundary>
+              &lt;/div>
+            &lt;/div>
+
+            &lt;Footer />
+          &lt;/Col>}
+
+          {/* {right column} */}
+        {settings.rightWindowSettings.available  &amp;&amp;  
+        &lt;div style={{
+          height: '100vh',
+          backgroundColor: settings.rightWindowSettings.background_colour
+        }} className="sticky-top end-0  ">
+  &lt;Col
+            xs={12}
+            md={5}
+            style={{
+              // position: "sticky",
+              width:  settings.rightWindowSettings.width,
+              height: "max-content",
+              overflowY:  "auto",
+              top: 0,
+              right: '0',
+              zIndex: 1000,
+              flex:  'unset',
+              backgroundColor: settings.rightWindowSettings.background_colour
+            }}
+            className="  border-start px-0"
+          >
+            &lt;div
+              className="pb-5  position-relative font-source_sans  h-100 border-black"
+              style={{
+                paddingTop: "4rem",
+                fontSize: "14px",
+                borderWidth: settings.background_colour !== 'white' ? '0px; !important' : '1px; !important',
+                borderColor: settings.background_colour !== 'white' ? 'transparent' : 'black',
+              }}
+            >
+              &lt;div className="position-relative">
+              &lt;AdvertWindowScreen
+                  data={data}
+                  activeKey={activeKey}
+                  handleSelect={handleCommmentPress}
+                  show={menuToggle}
+                  currentId={currentId}
+                  onCurrentIdChange={handleCurrentIdChange}
+                  comments={comments}
+                  onPageChange={handleCommentLoad}
+                  content_id={content_id}
+                  setContentId={setContentIdContent}
+                  getPageBookmarkNote={getPageBookmarkNote} //A fn that calls when a page is changes to load a new bookmar/ note  for the slected page
+                  pageBookmarkNote={pageBookmarkNote} // A state that contains the loaded bookmark/ note for a particular page
+                  onBookmarkNoteEditDelete={loadBookmarkNoteFn}
+                  bookmarksNotes={bookmarksNotes}
+                  showComment={settings.rightWindowSettings.tofc.comment}
+                  showAdvert={settings.rightWindowSettings.tofc.advert}
+                />
+              &lt;/div>
+            &lt;/div>
+          &lt;/Col>
+        &lt;/div>
+        
+      }
+          &lt;/Col>
+        
+        &lt;/Row>
+        {/* Sticky Button */}
+      {settings.leftWindowSettings.collapsable &amp;&amp; settings.leftWindowSettings.available === "true"  &amp;&amp; &lt;button
+          className="btn btn-questence-primary rounded-0 position-fixed"
+          style={{
+            width: "25px",
+            paddingRight: "20px",
+            color: "#fff",
+            backgroundColor: "#198754",
+            borderColor: "#198754",
+            top: "72px",
+            left: menuToggle ? "0" : settings.leftWindowSettings.available === "true"  &amp;&amp; settings.rightWindowSettings.available ? '280px' : "350px",
+            zIndex: 1001, // Ensure it stays on top of other elements
+            transition: "left 0.3s ease", // Smooth transition when collapsing
+          }}
+          onClick={handleMenuToggle}
+        >
+          &lt;i
+            className={`bi ${
+              menuToggle ? "bi-chevron-right" : "bi-chevron-left"
+            }`}
+          >&lt;/i>
+        &lt;/button>}
+       {settings.rightWindowSettings.collapsable &amp;&amp; &lt;button
+          className="btn btn-questence-primary rounded-0 position-fixed"
+          style={{
+            width: "25px",
+            paddingRight: "20px",
+            color: "#fff",
+            backgroundColor: "#198754",
+            borderColor: "#198754",
+            top: "72px",
+            right: menuToggle ? "0" : "0px",
+            zIndex: 1001, // Ensure it stays on top of other elements
+            transition: "left 0.3s ease", // Smooth transition when collapsing
+          }}
+          onClick={handleMenuToggle}
+        >
+          &lt;i
+            className={`bi ${
+              menuToggle ? "bi-chevron-left" : "bi-chevron-right"
+            }`}
+          >&lt;/i>
+        &lt;/button>}
+      &lt;/Container>
+      {/* onHide={handleClose} */}
+      &lt;Offcanvas show={openOverlay} onHide={handleClose} >
+        &lt;Offcanvas.Header closeButton>
+         
+        &lt;/Offcanvas.Header>
+        &lt;Offcanvas.Body>
+        &lt;div className="position-relative">
+              &lt;CourseDetailsScreen
+                data={data}
+                activeKey={activeKey}
+                handleSelect={handleCommmentPress}
+                show={menuToggle}
+                currentId={currentId}
+                onCurrentIdChange={handleCurrentIdChange}
+                comments={comments}
+                onPageChange={handleCommentLoad}
+                content_id={content_id}
+                setContentId={setContentIdContent}
+                getPageBookmarkNote={getPageBookmarkNote} //A fn that calls when a page is changes to load a new bookmar/ note  for the slected page
+                pageBookmarkNote={pageBookmarkNote} // A state that contains the loaded bookmark/ note for a particular page
+                onBookmarkNoteEditDelete={loadBookmarkNoteFn}
+                bookmarksNotes={bookmarksNotes}
+                showComment={settings.leftWindowSettings.tofc.comment}
+                showNote={settings.leftWindowSettings.tofc.note}
+                showNotification={settings.leftWindowSettings.tofc.notification}
+                showAdvert={settings.leftWindowSettings.tofc.advert}
+                showOutline={settings.leftWindowSettings.tofc.outline}
+              />
+            &lt;/div>
+        &lt;/Offcanvas.Body>
+      &lt;/Offcanvas>
+      
+    &lt;/div>
+  );
+};
+
+export default AppNavigator;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

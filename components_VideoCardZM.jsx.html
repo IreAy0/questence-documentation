@@ -1,0 +1,764 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> components/VideoCardZM.jsx</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="ImageCard.html">ImageCard</a></li><li><a href="VideoCard.html">VideoCard</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActivityIndicator">ActivityIndicator</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#AppNavigator">AppNavigator</a></li><li><a href="global.html#BookmarkCard">BookmarkCard</a></li><li><a href="global.html#BookmarkNoteCard">BookmarkNoteCard</a></li><li><a href="global.html#ChatCard">ChatCard</a></li><li><a href="global.html#CourseDetailsScreen">CourseDetailsScreen</a></li><li><a href="global.html#IFrameCard">IFrameCard</a></li><li><a href="global.html#LessonScreen">LessonScreen</a></li><li><a href="global.html#MobileAppNavigator">MobileAppNavigator</a></li><li><a href="global.html#NavBar">NavBar</a></li><li><a href="global.html#NotificationCard">NotificationCard</a></li><li><a href="global.html#ProblemComp">ProblemComp</a></li><li><a href="global.html#TextCard">TextCard</a></li><li><a href="global.html#client">client</a></li><li><a href="global.html#new_request">new_request</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#setAxiosDefaults">setAxiosDefaults</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>components/VideoCardZM.jsx</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
+import { useState, useEffect } from "react";
+import Button from "react-bootstrap/Button";
+import Spinner from "react-bootstrap/Spinner";
+import dayjs from "dayjs";
+import axios from "axios";
+const zoomTokenUrl = process.env.REACT_APP_ZOOM_TOKEN_URL;
+var utc = require("dayjs/plugin/utc");
+var timezone = require("dayjs/plugin/timezone");
+var isBetween = require("dayjs/plugin/isBetween");
+
+/**
+ * VideoCardZM component that handles displaying the Zoom meeting status
+ *
+ * @param {Object} props - The properties passed to the component
+ * @param {Object} props.data - The data associated with the Zoom meeting
+ * @returns {JSX.Element} The rendered component
+ */
+export default function VideoCardZM({ data }) {
+  const [loading, setLoading] = useState(false);
+  const [count, setCount] = useState(0);
+  // console.log("data", data);
+  // console.log("lms_user_id", lms_user_id);
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
+  dayjs.extend(isBetween);
+  useEffect(() => {
+    zoomDisplay();
+  }, [count]);
+
+    /**
+   * Sets a timer to update the component after the specified duration
+   *
+   * @param {number} duration - The duration in milliseconds to wait before updating
+   */
+  const setUpdateTimer = (duration) => {
+    const timeout = setTimeout(updateComponent, duration);
+  };
+
+  const updateComponent = () => {
+    setCount(count + 1);
+  };
+
+  /**
+   * Retrieves the Zoom meeting signature and initializes the meeting
+   *
+   * @returns {Promise&lt;void>} A promise that resolves when the signature has been retrieved
+   */
+  const getSignature = async () => {
+    setLoading(true);
+    let lmsToken = localStorage.getItem("lms_token");
+    let headers = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: `Token ${lmsToken}`,
+    };
+    await axios({
+      method: "post",
+      url: zoomTokenUrl,
+      data: { live_id: data?.live_id, live_role: 0 }, // 0 = participant, 1 = host.
+      headers: headers,
+    })
+      .then((res) => {
+        const data = res.data;
+        initMeeting(data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    setLoading(false);
+    // const newWindow = window.open(
+    //   "http://localhost:3000/70e80b05-0593-4f72-9cc3-47394afa1350/lesson/5a60e6ea-fdb8-483f-b5b9-aec0df32f9fd",
+    //   "_blank",
+    //   "noopener,noreferrer"
+    // );
+    // if (newWindow) newWindow.opener = null;
+  };
+  
+    /**
+   * Renders the component for a future Zoom meeting
+   *
+   * @returns {JSX.Element} The rendered upcoming component
+   */
+  const zoomUpcomingComponent = () => {
+    const differenceInMilliseconds =
+      dayjs(data?.live_starting_date_time).diff(dayjs(), "millisecond") + 1000; //Adding one second delay
+    setUpdateTimer(differenceInMilliseconds);
+    return (
+      &lt;>
+        &lt;img
+          src="/zoom-upc.png"
+          alt="zoom"
+          style={{
+            height: "30%",
+            display: "block",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        />
+        &lt;p className="text-center mt-3 mb-1">
+          This event is scheduled on
+          &lt;br />
+          {dayjs(data?.live_starting_date_time)
+            .tz(data?.live_response_json?.timezone ?? "Africa/Lagos")
+            .format("ddd, MMM DD, YYYY @ hh:mm A")}
+        &lt;/p>
+      &lt;/>
+    );
+  };
+  const zoomLiveomponent = () => {
+    return (
+      &lt;>
+        &lt;img
+          src="/zoom-live.png"
+          alt="zoom"
+          style={{
+            height: "30%",
+            display: "block",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        />
+        &lt;p className="text-center mt-3 mb-1">
+          A live event is in session.
+          &lt;br />
+          Please connect and join to participate.
+        &lt;/p>
+        &lt;Button
+          onClick={() => getSignature()}
+          variant="success"
+          size="md"
+          disabled={loading}
+          className="mt-2 shadow btn-main-filled text-decoration-none text-white"
+          style={{ width: "30%", maxWidth: 200 }}
+          // style={styles.btn}
+        >
+          {loading ? &lt;Spinner animation="border" size="sm" /> : "Connect"}
+        &lt;/Button>
+      &lt;/>
+    );
+  };
+  const zoomUEndedComponent = () => {
+    return (
+      &lt;>
+        &lt;img
+          src="/zoom-end.png"
+          alt="zoom"
+          style={{
+            height: "30%",
+            display: "block",
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        />
+        &lt;p className="text-center mt-3 mb-1">This event has ended&lt;/p>
+      &lt;/>
+    );
+  };
+  const zoomDisplay = () => {
+    const zoomDateTime = dayjs(data?.live_starting_date_time).tz(
+      data?.live_response_json?.timezone ?? "Africa/Lagos"
+    );
+    //data?.live_starting_date_time
+    // console.log("zoomDateTime", zoomDateTime);
+    const zoomDateTimeWithDura = dayjs(data?.live_starting_date_time)
+      .tz(data?.live_response_json?.timezone ?? "Africa/Lagos")
+      .add(data?.live_duration, "minutes");
+    if (
+      dayjs()
+        .tz(data?.live_response_json?.timezone ?? "Africa/Lagos")
+        .isBetween(zoomDateTime, zoomDateTimeWithDura)
+    ) {
+      return zoomLiveomponent();
+    } else if (dayjs().isBefore(zoomDateTime)) {
+      return zoomUpcomingComponent();
+    } else if (dayjs().isAfter(zoomDateTime)) {
+      return zoomUEndedComponent();
+    } else {
+      return &lt;>&lt;/>;
+    }
+  };
+  const initMeeting = async (credentials) => {
+    setLoading(true);
+    const { ZoomMtg } = await import("@zoomus/websdk");
+    ZoomMtg.setZoomJSLib("https://source.zoom.us/2.13.0/lib", "/av");
+    ZoomMtg.preLoadWasm();
+    ZoomMtg.prepareWebSDK();
+    // loads language files, also passes any error messages to the ui
+    ZoomMtg.i18n.load("en-US");
+    ZoomMtg.i18n.reload("en-US");
+    ZoomMtg.init({
+      leaveUrl: window.location.href,
+      success: (success) => {
+        ZoomMtg.join({
+          signature: credentials.token,
+          sdkKey: credentials.sdkKey,
+          meetingNumber: data?.live_id,
+          passWord: data?.live_response_json?.password,
+          userName: "Test",
+          userEmail: "test@mail.com",
+          success: (success) => {
+            console.log(success);
+            window.open(window.location.href, "_blank");
+            // const joinUrl = "/meeting.html?" + testTool.serialize(credentials);
+            // const joinUrl = window.location.href;
+            // console.log(joinUrl);
+            // window.open(joinUrl, "_blank");
+          },
+          error: (error) => {
+            console.log(error);
+          },
+        });
+      },
+      error: (error) => {
+        console.log(error);
+      },
+    });
+    setLoading(false);
+  };
+  // initMeeting();
+  return (
+    &lt;div
+      className=""
+      style={{
+        width: "100%",
+        height: 500,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+      }}
+    >
+      {zoomDisplay()}
+    &lt;/div>
+  );
+}
+
+// import { useState, useEffect, useRef } from "react";
+// import Button from "react-bootstrap/Button";
+// import Spinner from "react-bootstrap/Spinner";
+// import dayjs from "dayjs";
+// import axios from "axios";
+// import ZoomMtgEmbedded from "@zoomus/websdk/embedded";
+// const zoomTokenUrl = process.env.REACT_APP_ZOOM_TOKEN_URL;
+// var utc = require("dayjs/plugin/utc");
+// var timezone = require("dayjs/plugin/timezone");
+// var isBetween = require("dayjs/plugin/isBetween");
+
+// export default function VideoCardZM({ data }) {
+//   const [loading, setLoading] = useState(false);
+//   const [count, setCount] = useState(0);
+//   const [zoomVideowidth, setZoomVideowidth] = useState(200);
+//   const [zoomStarted, setZoomStarted] = useState(false);
+//   const ref = useRef(null);
+
+//   console.log("data", data);
+//   let lms_user_id = localStorage.getItem("lms_user_id");
+
+//   console.log("lms_user_id", lms_user_id);
+
+//   dayjs.extend(utc);
+//   dayjs.extend(timezone);
+//   dayjs.extend(isBetween);
+
+//   useEffect(() => {
+//     zoomDisplay();
+//   }, [count]);
+
+//   useEffect(() => {
+//     setZoomVideowidth(ref.current ? ref.current.offsetWidth : 200);
+//   }, [ref.current]);
+
+//   // useEffect(() => {
+//   //   $("#meetingSDKElement").on("remove", function () {
+//   //     alert("Element was removed");
+//   //   });
+//   // });
+
+//   const setUpdateTimer = (duration) => {
+//     const timeout = setTimeout(updateComponent, duration);
+//   };
+
+//   const updateComponent = () => {
+//     setCount(count + 1);
+//   };
+
+//   const getSignature = async () => {
+//     setLoading(true);
+
+//     let lmsToken = localStorage.getItem("lms_token");
+
+//     let headers = {
+//       Accept: "application/json",
+//       "Content-Type": "application/json",
+//       Authorization: `Token ${lmsToken}`,
+//     };
+
+//     await axios({
+//       method: "post",
+//       url: zoomTokenUrl,
+//       data: { live_id: data?.live_id, live_role: 0 }, // 0 = participant, 1 = host.
+//       headers: headers,
+//     })
+//       .then((res) => {
+//         const data = res.data;
+//         initMeeting(data);
+//       })
+//       .catch((err) => {
+//         console.log(err);
+//       });
+
+//     setLoading(false);
+//   };
+
+//   const zoomUpcomingComponent = () => {
+//     const differenceInMilliseconds =
+//       dayjs(data?.live_starting_date_time).diff(dayjs(), "millisecond") + 1000; //Adding one second delay
+
+//     setUpdateTimer(differenceInMilliseconds);
+
+//     return (
+//       &lt;>
+//         &lt;img
+//           src="/zoom-upc.png"
+//           alt="zoom"
+//           style={{
+//             height: "30%",
+//             display: "block",
+//             marginLeft: "auto",
+//             marginRight: "auto",
+//           }}
+//         />
+//         &lt;p className="text-center mt-3 mb-1">
+//           This event is scheduled on
+//           &lt;br />
+//           {dayjs(data?.live_starting_date_time)
+//             .tz(data?.live_response_json?.timezone ?? "Africa/Lagos")
+//             .format("ddd, MMM DD, YYYY @ hh:mm A")}
+//         &lt;/p>
+//       &lt;/>
+//     );
+//   };
+
+//   const zoomLiveomponent = () => {
+//     return (
+//       &lt;>
+//         &lt;img
+//           src="/zoom-live.png"
+//           alt="zoom"
+//           style={{
+//             height: "30%",
+//             display: "block",
+//             marginLeft: "auto",
+//             marginRight: "auto",
+//           }}
+//         />
+//         &lt;p className="text-center mt-3 mb-1">
+//           A live event is in session.
+//           &lt;br />
+//           Please connect and join to participate.
+//         &lt;/p>
+//         &lt;Button
+//           onClick={() => getSignature()}
+//           variant="success"
+//           size="md"
+//           disabled={loading}
+//           className="mt-2 shadow btn-main-filled text-decoration-none text-white"
+//           style={{ width: "30%", maxWidth: 200 }}
+//           // style={styles.btn}
+//         >
+//           {loading ? &lt;Spinner animation="border" size="sm" /> : "Connect"}
+//         &lt;/Button>
+//       &lt;/>
+//     );
+//   };
+
+//   const zoomUEndedComponent = () => {
+//     return (
+//       &lt;>
+//         &lt;img
+//           src="/zoom-end.png"
+//           alt="zoom"
+//           style={{
+//             height: "30%",
+//             display: "block",
+//             marginLeft: "auto",
+//             marginRight: "auto",
+//           }}
+//         />
+//         &lt;p className="text-center mt-3 mb-1">This event has ended&lt;/p>
+//       &lt;/>
+//     );
+//   };
+
+//   const zoomDisplay = () => {
+//     const zoomDateTime = dayjs(data?.live_starting_date_time).tz(
+//       data?.live_response_json?.timezone ?? "Africa/Lagos"
+//     );
+//     //data?.live_starting_date_time
+
+//     // console.log("zoomDateTime", zoomDateTime);
+
+//     const zoomDateTimeWithDura = dayjs(data?.live_starting_date_time)
+//       .tz(data?.live_response_json?.timezone ?? "Africa/Lagos")
+//       .add(data?.live_duration, "minutes");
+
+//     if (
+//       dayjs()
+//         .tz(data?.live_response_json?.timezone ?? "Africa/Lagos")
+//         .isBetween(zoomDateTime, zoomDateTimeWithDura)
+//     ) {
+//       return zoomLiveomponent();
+//     } else if (dayjs().isBefore(zoomDateTime)) {
+//       return zoomUpcomingComponent();
+//     } else if (dayjs().isAfter(zoomDateTime)) {
+//       return zoomUEndedComponent();
+//     } else {
+//       return &lt;>&lt;/>;
+//     }
+//   };
+
+//   // const initMeeting = async (credentials) => {
+//   //   setLoading(true);
+
+//   //   const { ZoomMtg } = await import("@zoomus/websdk");
+
+//   //   ZoomMtg.setZoomJSLib("https://source.zoom.us/2.13.0/lib", "/av");
+//   //   ZoomMtg.preLoadWasm();
+//   //   ZoomMtg.prepareWebSDK();
+//   //   // loads language files, also passes any error messages to the ui
+//   //   ZoomMtg.i18n.load("en-US");
+//   //   ZoomMtg.i18n.reload("en-US");
+//   //   ZoomMtg.init({
+//   //     leaveUrl: window.location.href,
+//   //     success: (success) => {
+//   //       ZoomMtg.join({
+//   //         signature: credentials.token,
+//   //         sdkKey: credentials.sdkKey,
+//   //         meetingNumber: data?.live_id,
+//   //         passWord: data?.live_response_json?.password,
+//   //         userName: "Test",
+//   //         userEmail: "test@mail.com",
+//   //         success: (success) => {
+//   //           console.log(success);
+//   //         },
+//   //         error: (error) => {
+//   //           console.log(error);
+//   //         },
+//   //       });
+//   //     },
+//   //     error: (error) => {
+//   //       console.log(error);
+//   //     },
+//   //   });
+
+//   //   setLoading(false);
+//   // };
+
+//   const initMeeting = async (credentials) => {
+//     setLoading(true);
+
+//     const client = ZoomMtgEmbedded.createClient();
+
+//     let meetingSDKElement = document.getElementById("meetingSDKElement");
+
+//     // const { ZoomMtg } = await import("@zoomus/websdk");
+
+//     client.init({
+//       debug: true,
+//       zoomAppRoot: meetingSDKElement,
+//       language: "en-US",
+//       customize: {
+//         video: {
+//           isResizable: false,
+//           viewSizes: {
+//             // default: {
+//             //   width: zoomVideowidth,
+//             //   height: 500,
+//             // },
+//             // default: {
+//             //   width: meetingSDKElement.clientWidth,
+//             //   height: meetingSDKElement.clientHeight - 200,
+//             // },
+//             ribbon: {
+//               width: meetingSDKElement.clientWidth,
+//               height: meetingSDKElement.clientHeight,
+//             },
+//             // ribbon: {
+//             //   width: 100,
+//             //   height: 70,
+//             // },
+//           },
+//           popper: {
+//             anchorElement: meetingSDKElement,
+//             placement: "center",
+//           },
+//         },
+//         meetingInfo: [
+//           // "topic",
+//           // "host",
+//           // "mn",
+//           // "pwd",
+//           // "telPwd",
+//           // "invite",
+//           // "participant",
+//           // "dc",
+//           // "enctype",
+//         ],
+//         toolbar: {
+//           buttons: [
+//             {
+//               text: "Fullscreen",
+//               className: "CustomButton",
+//               onClick: () => {
+//                 console.log("custom button");
+//               },
+//             },
+//           ],
+//         },
+//       },
+//     });
+
+//     // console.log(
+//     //   "data?.live_response_json?.password,",
+//     //   data?.live_response_json?.password
+//     // );
+
+//     client
+//       .join({
+//         signature: credentials.token,
+//         sdkKey: credentials.sdkKey,
+//         meetingNumber: data?.live_id,
+//         password: data?.live_response_json?.password,
+//         userName: "Test",
+//         userEmail: "test@mail.com",
+
+//         // success: (success) => {
+//         //   console.log("success");
+//         // },
+//         // error: (error) => {
+//         //   console.log(error);
+//         // },
+//       })
+//       .then(() => {
+//         console.log("Went Through");
+
+//         var user = client.getCurrentUser({});
+//         console.log("user: ", user);
+
+//         var getAttendeeslist = client.getAttendeeslist({});
+//         console.log("getAttendeeslist", getAttendeeslist);
+
+//         setZoomStarted(true);
+//         setLoading(false);
+//       })
+//       .catch((e) => {
+//         console.log("get devices error!", e);
+//         setLoading(false);
+//       });
+
+//     client.leaveMeeting({
+//       success: function (res) {
+//         console.log("Leave Meeting successful!");
+//       },
+//       error: function (res) {
+//         console.log("Leave Meeting failed with error:", res);
+//       },
+//     });
+//     // .then(() => console.log("All is well"))
+//     // .catch((e) => {
+//     //   console.log("Could not leave", e);
+//     // });
+
+//     // ZoomMtg.setZoomJSLib("https://source.zoom.us/2.13.0/lib", "/av");
+//     // ZoomMtg.preLoadWasm();
+//     // ZoomMtg.prepareWebSDK();
+//     // // loads language files, also passes any error messages to the ui
+//     // ZoomMtg.i18n.load("en-US");
+//     // ZoomMtg.i18n.reload("en-US");
+//     // ZoomMtg.init({
+//     //   leaveUrl: window.location.href,
+//     //   success: (success) => {
+//     //     ZoomMtg.join({
+//     //       signature: credentials.token,
+//     //       sdkKey: credentials.sdkKey,
+//     //       meetingNumber: data?.live_id,
+//     //       passWord: data?.live_response_json?.password,
+//     //       userName: "Test",
+//     //       userEmail: "test@mail.com",
+//     //       success: (success) => {
+//     //         console.log(success);
+//     //       },
+//     //       error: (error) => {
+//     //         console.log(error);
+//     //       },
+//     //     });
+//     //   },
+//     //   error: (error) => {
+//     //     console.log(error);
+//     //   },
+//     // });
+//   };
+
+//   // initMeeting();
+
+//   return (
+//     &lt;>
+//       &lt;div
+//         ref={ref}
+//         style={{
+//           width: "100%",
+//           height: 500,
+//           display: "flex",
+//           alignItems: "center",
+//           justifyContent: "center",
+//           flexDirection: zoomStarted ? "row" : "column",
+//         }}
+//       >
+//         {zoomStarted ? &lt;>&lt;/> : zoomDisplay()}
+//         &lt;div
+//           id="meetingSDKElement"
+//           style={{
+//             width: "100%",
+//             height: 500,
+//           }}
+//         >&lt;/div>
+//       &lt;/div>
+
+//       {/* {!zoomStarted &amp;&amp; (
+//         &lt;div
+//           className=""
+//           style={{
+//             width: "100%",
+//             height: 500,
+//             display: "flex",
+//             alignItems: "center",
+//             justifyContent: "center",
+//             flexDirection: "column",
+//           }}
+//         >
+//           {zoomDisplay()}
+//         &lt;/div>
+//       )} */}
+//     &lt;/>
+//   );
+// }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

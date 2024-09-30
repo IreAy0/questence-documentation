@@ -1,0 +1,789 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> screens/CourseDetailsScreen.jsx</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="ImageCard.html">ImageCard</a></li><li><a href="VideoCard.html">VideoCard</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActivityIndicator">ActivityIndicator</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#AppNavigator">AppNavigator</a></li><li><a href="global.html#BookmarkCard">BookmarkCard</a></li><li><a href="global.html#BookmarkNoteCard">BookmarkNoteCard</a></li><li><a href="global.html#ChatCard">ChatCard</a></li><li><a href="global.html#CourseDetailsScreen">CourseDetailsScreen</a></li><li><a href="global.html#IFrameCard">IFrameCard</a></li><li><a href="global.html#LessonScreen">LessonScreen</a></li><li><a href="global.html#MobileAppNavigator">MobileAppNavigator</a></li><li><a href="global.html#NavBar">NavBar</a></li><li><a href="global.html#NotificationCard">NotificationCard</a></li><li><a href="global.html#ProblemComp">ProblemComp</a></li><li><a href="global.html#TextCard">TextCard</a></li><li><a href="global.html#client">client</a></li><li><a href="global.html#new_request">new_request</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#setAxiosDefaults">setAxiosDefaults</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>screens/CourseDetailsScreen.jsx</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { useState, Fragment, useEffect } from "react";
+import { Tabs, Tab, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Link, useHistory } from "react-router-dom";
+import ChatCard from "../components/ChatCard";
+import CommentInputCard from "../components/CommentInputCard";
+
+import { getPageID, truncateText } from "../helpers/utilities";
+import Collapse from "@kunukn/react-collapse";
+import BookmarkNoteCard from "../components/BookmarkNoteCard";
+import ModalAddBookmarkNote from "../components/ModalAddBookmarkNote";
+// import DownloadCard from "../components/DownloadCard";
+
+/**
+ * CourseDetailsScreen component displays course details, comments, and bookmarks.
+ * 
+ * @param {Object} props - The props for the component.
+ * @param {Array} props.data - The course data.
+ * @param {Array} props.comments - The comments for the course.
+ * @param {Function} props.onCurrentIdChange - Function to change the current ID.
+ * @param {string} props.currentId - The current lesson ID.
+ * @param {Object} props.pageBookmarkNote - The bookmark note for the current page.
+ * @param {Array} props.bookmarksNotes - The list of bookmark notes.
+ * @param {Function} props.getPageBookmarkNote - Function to get bookmark notes for a page.
+ * @param {Function} props.onBookmarkNoteEditDelete - Function to edit or delete bookmark notes.
+ * @param {string} props.activeKey - The active tab key.
+ * @param {boolean} props.showOutline - Indicates whether to show the outline tab.
+ * @param {boolean} props.showNote - Indicates whether to show the bookmarks tab.
+ * @param {boolean} props.showComment - Indicates whether to show the comments tab.
+ * @param {boolean} props.showNotification - Indicates whether to show the notifications tab.
+ * @param {Function} props.handleSelect - Function to handle tab selection.
+ * @param {Function} props.setContentId - Function to set the content ID.
+ * @param {Function} props.onPageChange - Function to handle page changes.
+ */
+const CourseDetailsScreen = (props) => {
+  let data = props.data;
+  let comments = props.comments;
+  let handleCurrentIdChange = props.onCurrentIdChange;
+  let currentId = props.currentId;
+  let pageBookmarkNote = props.pageBookmarkNote;
+  const history = useHistory();
+  const bookmarksNotes = props.bookmarksNotes;
+
+  const [openList, setOpenList] = useState([]);
+
+  const [showBookmarkNoteModal, setShowBookmarkNoteModal] = useState(false);
+  const [currentBookmarkNote, setCurrentBookmarkNote] = useState("");
+
+  // const [pageBookmarkNote, setPageBookmarkNote] = useState([]);
+
+  // ----- Navigation Functions Starts -----
+
+  var url = window.location.href;
+  const course_id = url.split("/")[3];
+  const callingApp = localStorage.getItem("calling_app");
+  const setContentId = props.setContentId;
+  const page_id = localStorage.getItem("page_id");
+  // ----- Navigation Functions Ends -----
+
+  // ----- Comment Functions Starts -----
+
+  const onPageChange = props.onPageChange;
+  const [replyToCommentID, setReplyToCommentID] = useState(null);
+
+    /**
+   * Load comments for the specified page.
+   * @param {string} page_id - The ID of the page.
+   */
+
+  const handleCommentLoad = (page_id) => {
+    onPageChange(page_id);
+  };
+
+    /**
+   * Set the ID of the comment to reply to or cancel if no ID is provided.
+   * @param {string|null} comment_id - The ID of the comment to reply to.
+   */
+  const setReplyToComment = (comment_id) => {
+    //Empty param means you've cancelled the reply to
+    setReplyToCommentID(comment_id);
+  };
+
+  // ----- Comment Functions Ends -----
+
+  // ----- getPageBookmarkNote Functions Starts -----
+
+  async function openBookmarkNoteModal() {
+    setShowBookmarkNoteModal(true);
+  }
+
+  const closeBookmarkNoteModal = () => setShowBookmarkNoteModal(false);
+
+   /**
+   * Get bookmark note for the specified page.
+   * @param {string} page_id - The ID of the page.
+   */
+  const getPageBookmarkNote = props.getPageBookmarkNote;
+  const onBookmarkNoteEditDelete = props.onBookmarkNoteEditDelete;
+
+  const getBookmarkNote = (page_id) => {
+    getPageBookmarkNote(page_id);
+  };
+
+  const loadAllBookmarksNotes = () => {
+    onBookmarkNoteEditDelete();
+  };
+
+    /**
+   * Open the selected bookmark note modal.
+   * @param {Event} e - The event triggering the function.
+   * @param {string} lessonID - The lesson ID related to the bookmark.
+   */
+  const openSelectedBookmarkNote = (e, lessonID) => {
+    e.stopPropagation();
+    let bookmarkNote = bookmarksNotes.find(
+      (bookmarkNote) => bookmarkNote.p_id === lessonID
+    );
+    console.log(bookmarkNote);
+    setCurrentBookmarkNote(bookmarkNote);
+    openBookmarkNoteModal();
+  };
+
+  useEffect(() => {
+    getBookmarkNote(getPageID());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookmarksNotes]);
+
+  // ----- getPageBookmarkNote Functions Ends -----
+
+  const handleIconClick = (sectionIndex) => {
+    // console.log(dataRefs[sectionIndex].current);
+    // dataRefs[sectionIndex].current.classList.add("hide-parent");
+    // selectedComponentRef.current.classList.add('cf');
+    // selectedComponentRef.current[sectionIndex] = !selectedComponentRef.current[sectionIndex];
+    // console.log(selectedComponentRef.current[sectionIndex])
+    // setOpen(!open)
+
+    if (openList.includes(sectionIndex)) {
+      //In List So Remove
+      setOpenList((current) => {
+        return current.filter((openList) => openList !== sectionIndex);
+      });
+    } else {
+      //Not In List So Add
+      setOpenList((current) => [...current, sectionIndex]);
+    }
+  };
+
+  const currItemId = currentId; //url.split("/")[5];
+
+  const handleLinkOpen = (urlPath, currId) => {
+    setContentId(currId);
+    handleCurrentIdChange(currId);
+
+    history.push(urlPath);
+  };
+
+  return (
+    &lt;>
+      &lt;ModalAddBookmarkNote
+        showModal={showBookmarkNoteModal}
+        closeModal={closeBookmarkNoteModal}
+        noteID={currentBookmarkNote?.id}
+        note={currentBookmarkNote?.note}
+        loadBookmarkNote={loadAllBookmarksNotes}
+      />
+
+      {/* &lt;ActivityIndicator visible={loading} /> */}
+      &lt;div
+        // className={show ? "d-none" : ""}
+        style={{
+          overflow: "auto",
+          position: "relasttive",
+          minWidth: "100%",
+          height: "100%",
+        }}
+      >
+        &lt;Tabs
+          activeKey={props.activeKey}
+          id="controlled-tab-example"
+          className=" border-bottom px-2 bg-transparent"
+          style={{
+            // maxWidth: "24vw",
+            position: "sticky",
+            top: 0,
+            // top: "70px",
+            // padding: "10px",
+            zIndex: 1,
+            width: "100%",
+          }}
+          onSelect={props.handleSelect}
+        >
+         {props.showOutline  &amp;&amp; &lt;Tab
+            tabClassName="col "
+            eventKey="home"
+            title={
+              &lt;OverlayTrigger
+                placement="bottom"
+                overlay={&lt;Tooltip id="tooltip-tab-outline">Outline&lt;/Tooltip>}
+              >
+                &lt;i className="bi bi-archive-fill fs-5">&lt;/i>
+              &lt;/OverlayTrigger>
+            }
+            style={{ marginTop: "16px" }}
+          >
+            &lt;div
+              className="px-3"
+              style={{
+                position: "relative",
+                // overflow: "scroll",
+                // height: "100vh",
+                marginTop: "10px",
+                paddingBottom: "200px",
+              }}
+            >
+              {/* page_type SE STARTS */}
+
+              {data &amp;&amp;
+                page_id !== "all" &amp;&amp;
+                data?.map((lesson, lessonIndex) => {
+                  return (
+                    &lt;Fragment key={lessonIndex}>
+                      {lesson?.position_id.length === 8 ? (
+                        &lt;div className="mb-2 child">
+                          {
+                            // Show the bookmark icon attach to that particular lesson's content on the table of content if available
+                            bookmarksNotes.find(
+                              ({ p_id }) => p_id === lesson["id"]
+                            ) ? (
+                              &lt;span>
+                                &lt;OverlayTrigger
+                                  overlay={
+                                    &lt;Tooltip id="tooltip-disabled">
+                                      View Bookmark/ Note
+                                    &lt;/Tooltip>
+                                  }
+                                >
+                                  &lt;span>
+                                    &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;
+                                    &lt;i
+                                      className="bi bi-bookmark-check text-success cursor-pointer"
+                                      onClick={(e) =>
+                                        openSelectedBookmarkNote(
+                                          e,
+                                          lesson["id"]
+                                        )
+                                      }
+                                    >&lt;/i>
+                                  &lt;/span>
+                                &lt;/OverlayTrigger>
+                              &lt;/span>
+                            ) : (
+                              &lt;span>
+                                &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;
+                              &lt;/span>
+                            )
+                          }
+                          &lt;OverlayTrigger
+                            overlay={
+                              &lt;Tooltip id={`tooltip-${lesson["id"]}`}>
+                                {lesson["title"]}
+                              &lt;/Tooltip>
+                            }
+                            placement="top"
+                          >
+                            &lt;Link
+                              to={{
+                                pathname: `/${course_id}/${callingApp}/lesson/${lesson["id"]}`,
+                                state: {
+                                  data: data[lessonIndex + 1],
+                                  type: "lesson",
+                                  curr: lesson["id"],
+                                },
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCommentLoad(lesson?.id); //Trigger Load comment of the selected page
+                                getBookmarkNote(lesson?.id); //Trigger Load bookmarkNote of the selected page
+                                handleLinkOpen(lesson?.id, lesson?.id);
+                              }}
+                              className={`text-decoration-none ${
+                                lesson["id"] === currItemId
+                                  ? "curr-nav"
+                                  : currItemId
+                              }`}
+                              key={lesson["id"]}
+                            >
+                              {truncateText(lesson["title"], 28, "...")}
+                            &lt;/Link>
+                          &lt;/OverlayTrigger>
+                        &lt;/div>
+                      ) : (
+                        &lt;>&lt;/>
+                      )}
+                    &lt;/Fragment>
+                  );
+                })}
+
+              {data &amp;&amp;
+                data?.map((section, sectionIndex) => {
+                  return (
+                    &lt;Fragment key={sectionIndex}>
+                      {section?.position_id?.length === 2 &amp;&amp; (
+                        &lt;div onClick={() => handleIconClick(sectionIndex)}>
+                          {openList.includes(sectionIndex) ? (
+                            &lt;i className="bi bi-caret-down-fill">&lt;/i>
+                          ) : (
+                            &lt;i className="bi bi-caret-right-fill">&lt;/i>
+                          )}
+                          &lt;OverlayTrigger
+                            overlay={
+                              &lt;Tooltip id={`tooltip-${section["id"]}`}>
+                                {section["title"]}
+                              &lt;/Tooltip>
+                            }
+                            placement="top"
+                          >
+                            &lt;span
+                              onClick={() =>
+                                handleLinkOpen(
+                                  `/${course_id}/${callingApp}/lesson/${section["id"]}`,
+                                  section["id"]
+                                )
+                              }
+                              style={{ cursor: "pointer" }}
+                              className={`text-decoration-none fw-bolder ${
+                                section["id"] === currItemId
+                                  ? "curr-nav"
+                                  : currItemId
+                              }`}
+                              key={section["id"]}
+                            >
+                              {truncateText(section["title"], 30, "...")}
+                            &lt;/span>
+                          &lt;/OverlayTrigger>
+
+                          &lt;Collapse
+                            isOpen={openList.includes(sectionIndex) || true}
+                            className="mt-2 collapse-css-transition"
+                          >
+                            {data?.map((subSection, subSectionIndex) => {
+                              return (
+                                &lt;Fragment key={subSectionIndex}>
+                                  {subSection?.position_id?.length === 5 &amp;&amp;
+                                  subSection["position_id"].substr(0, 2) ===
+                                    section.position_id ? (
+                                    &lt;div
+                                      className="child "
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleIconClick(subSectionIndex);
+                                      }}
+                                    >
+                                      &amp;nbsp;&amp;nbsp;&amp;nbsp;
+                                      {openList.includes(subSectionIndex) ? (
+                                        &lt;i className="bi bi-caret-down-fill">&lt;/i>
+                                      ) : (
+                                        &lt;i className="bi bi-caret-right-fill">&lt;/i>
+                                      )}
+                                      &lt;OverlayTrigger
+                                        overlay={
+                                          &lt;Tooltip
+                                            id={`tooltip-${subSection["id"]}`}
+                                          >
+                                            {subSection["title"]}
+                                          &lt;/Tooltip>
+                                        }
+                                        placement="top"
+                                      >
+                                        &lt;span
+                                          onClick={() =>
+                                            handleLinkOpen(
+                                              `/${course_id}/${callingApp}/lesson/${subSection["id"]}`,
+                                              subSection["id"]
+                                            )
+                                          }
+                                          className={`cursor-pointer text-decoration-none ${
+                                            subSection["id"] === currItemId
+                                              ? "curr-nav"
+                                              : ""
+                                          }`}
+                                          key={subSection["id"]}
+                                        >
+                                          {truncateText(
+                                            subSection["title"],
+                                            30,
+                                            "..."
+                                          )}
+                                        &lt;/span>
+                                      &lt;/OverlayTrigger>
+                                      &lt;Collapse
+                                        isOpen={openList.includes(
+                                          subSectionIndex
+                                        ) || true}
+                                        className="mt-2 collapse-css-transition"
+                                      >
+                                        {data?.map((lesson, lessonIndex) => {
+                                          return (
+                                            &lt;Fragment key={lessonIndex}>
+                                              {lesson?.position_id.length ===
+                                                8 &amp;&amp;
+                                              lesson["position_id"].substr(
+                                                0,
+                                                5
+                                              ) === subSection.position_id ? (
+                                                &lt;div className="mb-2 child">
+                                                  {bookmarksNotes.find(
+                                                    ({ p_id }) =>
+                                                      p_id === lesson["id"]
+                                                  ) ? (
+                                                    &lt;span>
+                                                      &lt;OverlayTrigger
+                                                        overlay={
+                                                          &lt;Tooltip id="tooltip-disabled">
+                                                            View Bookmark/ Note
+                                                          &lt;/Tooltip>
+                                                        }
+                                                      >
+                                                        &lt;span>
+                                                          &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;
+                                                          &lt;i
+                                                            className="bi bi-bookmark-check text-success cursor-pointer"
+                                                            onClick={(e) =>
+                                                              openSelectedBookmarkNote(
+                                                                e,
+                                                                lesson["id"]
+                                                              )
+                                                            }
+                                                          >
+                                                            {" "}
+                                                          &lt;/i>
+                                                        &lt;/span>
+                                                      &lt;/OverlayTrigger>
+                                                    &lt;/span>
+                                                  ) : (
+                                                    &lt;span>
+                                                      &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;
+                                                    &lt;/span>
+                                                  )}
+                                                  &lt;OverlayTrigger
+                                                    overlay={
+                                                      &lt;Tooltip
+                                                        id={`tooltip-${lesson["id"]}`}
+                                                      >
+                                                        {lesson["title"]}
+                                                      &lt;/Tooltip>
+                                                    }
+                                                    placement="top"
+                                                  >
+                                                    &lt;Link
+                                                      to={{
+                                                        pathname: `/${course_id}/${callingApp}/lesson/${lesson["id"]}`,
+                                                        state: {
+                                                          data: data[
+                                                            lessonIndex + 1
+                                                          ],
+                                                          type: "lesson",
+                                                          curr: lesson["id"],
+                                                        },
+                                                      }}
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleCommentLoad(
+                                                          lesson?.id
+                                                        ); //Trigger Load comment of the selected page
+                                                        getBookmarkNote(
+                                                          lesson?.id
+                                                        ); //Trigger Load bookmarkNote of the selected page
+                                                        handleLinkOpen(
+                                                          lesson?.id,
+                                                          lesson?.id
+                                                        );
+                                                      }}
+                                                      className={`text-decoration-none ${
+                                                        lesson["id"] ===
+                                                        currItemId
+                                                          ? "curr-nav"
+                                                          : currItemId
+                                                      }`}
+                                                      key={lesson["id"]}
+                                                    >
+                                                      {truncateText(
+                                                        lesson["title"],
+                                                        28,
+                                                        "..."
+                                                      )}
+                                                    &lt;/Link>
+                                                  &lt;/OverlayTrigger>
+                                                &lt;/div>
+                                              ) : null}
+                                            &lt;/Fragment>
+                                          );
+                                        })}
+                                      &lt;/Collapse>
+                                    &lt;/div>
+                                  ) : (
+                                    &lt;>&lt;/>
+                                  )}
+                                &lt;/Fragment>
+                              );
+                            })}
+                          &lt;/Collapse>
+                        &lt;/div>
+                      )}
+                    &lt;/Fragment>
+                  );
+                })}
+
+              {/* page_type SE ENDS */}
+            &lt;/div>
+          &lt;/Tab>}
+          {props.showNote  &amp;&amp; &lt;Tab
+            tabClassName="col"
+            eventKey="bookmarks"
+            title={
+              &lt;>
+                &lt;OverlayTrigger
+                  placement="bottom"
+                  overlay={
+                    &lt;Tooltip id="tooltip-tab-bookmarks">Bookmarks&lt;/Tooltip>
+                  }
+                >
+                  &lt;i className="bi bi-bookmark-fill fs-5">&lt;/i>
+                &lt;/OverlayTrigger>
+                {pageBookmarkNote?.id &amp;&amp; (
+                  &lt;span className="position-absolute top-1 translate-middle p-1 bg-danger border border-light rounded-circle noti-pulse">
+                    &lt;span className="visually-hidden">New alerts&lt;/span>
+                  &lt;/span>
+                )}
+              &lt;/>
+            }
+            style={{ marginTop: "16px" }}
+          >
+            &lt;div className="pb-5 px-3">
+              {/* {bookmarks &amp;&amp;
+                bookmarks.map((bookmark) => {
+                  return (
+                    &lt;BookmarkCard
+                      lessonTopic={bookmark.lesson}
+                      datePosted="Sep 3, 2021"
+                      url={`/${course_id}/lesson/${bookmark.lesson}`}
+                      notes={bookmark.note}
+                      key={bookmark.id}
+                    />
+                  );
+                })} */}
+
+              &lt;p>
+                &lt;BookmarkNoteCard
+                  bookmarkNoteData={pageBookmarkNote}
+                  allBookmarksNotesData={bookmarksNotes}
+                  loadAllBookmarksNotes={loadAllBookmarksNotes}
+                />
+              &lt;/p>
+            &lt;/div>
+          &lt;/Tab>}
+          {props.showComment &amp;&amp; &lt;Tab
+            tabClassName="col"
+            eventKey="comments"
+            title={
+              &lt;>
+                &lt;OverlayTrigger
+                  placement="bottom"
+                  overlay={&lt;Tooltip id="tooltip-tab-comment">Comments&lt;/Tooltip>}
+                >
+                  &lt;i className="bi bi-chat-square-dots-fill fs-5">&lt;/i>
+                &lt;/OverlayTrigger>
+                {comments?.length > 0 &amp;&amp; (
+                  &lt;span className="position-absolute top-1 translate-middle p-1 bg-danger border border-light rounded-circle noti-pulse">
+                    &lt;span className="visually-hidden">New alerts&lt;/span>
+                  &lt;/span>
+                )}
+              &lt;/>
+            }
+            style={{ marginTop: "16px" }}
+            // onEntered={console.log("Comment Tab Clicked")}
+          >
+            &lt;div
+              className="px-3"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                height: "calc(100vh - 130px)",
+              }}
+            >
+              &lt;div style={{ flex: 1, overflow: "hidden" }}>
+                {comments?.map((comment, index) => (
+                  &lt;Fragment key={index}>
+                    &lt;ChatCard
+                      index={index}
+                      id={comment?.id}
+                      username={comment?.user_id?.first_name}
+                      comment={comment?.comment}
+                      likes={comment?.likes}
+                      dislikes={comment?.dislikes}
+                      setReplyToComment={setReplyToComment}
+                      replies={comment?.reply_belonging_to_comment}
+                      // lessonTopic="Lesson 1"
+                      datePosted={comment?.updated_at}
+                      // error
+                    />
+                  &lt;/Fragment>
+                ))}
+              &lt;/div>
+              {comments?.length === 0 &amp;&amp; (
+                &lt;div style={{ flex: 1 }}>
+                  &lt;small>
+                    &lt;p className="text-center text-muted">
+                      No comments yet.
+                      &lt;br />
+                      Be the first to comment
+                    &lt;/p>
+                  &lt;/small>
+                &lt;/div>
+              )}
+              &lt;div
+              // className="pb-3 mt-1"
+              // style={{ position: "sticky", bottom: 0 }}
+              >
+                &lt;CommentInputCard
+                  handleCommentLoad={handleCommentLoad}
+                  replyToCommentID={replyToCommentID}
+                  setReplyToComment={setReplyToComment}
+                />
+              &lt;/div>
+            &lt;/div>
+          &lt;/Tab>}
+          {props.showNotification &amp;&amp; &lt;Tab
+            tabClassName="col"
+            eventKey="notification"
+            title={
+              &lt;>
+                &lt;OverlayTrigger
+                  placement="bottom"
+                  overlay={
+                    &lt;Tooltip id="tooltip-tab-notification">
+                      Notifications
+                    &lt;/Tooltip>
+                  }
+                >
+                  &lt;i className="bi bi-bell-fill fs-5">&lt;/i>
+                &lt;/OverlayTrigger>
+                {/* &lt;span className="position-absolute top-1 translate-middle p-1 bg-danger border border-light rounded-circle">
+                  &lt;span className="visually-hidden">New alerts&lt;/span>
+                &lt;/span> */}
+              &lt;/>
+            }
+            style={{ marginTop: "16px" }}
+          >
+            {/* &lt;div className=" pb-5">
+              &lt;NotificationCard
+                notificationTitle="Assignment due"
+                datePosted="Sep 3, 2021"
+                notificationContent="Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+                    Fusce iaculis convallis eros nec fermentum. Nulla facilisi. Sed varius orci quis justo laoreet, et commodo turpis suscipit."
+              />
+            &lt;/div> */}
+
+            &lt;div className="mt-5 pt-5 text-center px-3">
+              &lt;i className="bi bi-bell-slash-fill fs-1 text-muted">&lt;/i>
+              &lt;small>
+                &lt;p className="text-muted">No notifications available&lt;/p>
+              &lt;/small>
+            &lt;/div>
+          &lt;/Tab>}
+        
+        &lt;/Tabs>
+      &lt;/div>
+    &lt;/>
+  );
+};
+
+export default CourseDetailsScreen;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

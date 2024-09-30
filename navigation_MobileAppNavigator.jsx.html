@@ -1,0 +1,225 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> navigation/MobileAppNavigator.jsx</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="ImageCard.html">ImageCard</a></li><li><a href="VideoCard.html">VideoCard</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActivityIndicator">ActivityIndicator</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#AppNavigator">AppNavigator</a></li><li><a href="global.html#BookmarkCard">BookmarkCard</a></li><li><a href="global.html#BookmarkNoteCard">BookmarkNoteCard</a></li><li><a href="global.html#ChatCard">ChatCard</a></li><li><a href="global.html#CourseDetailsScreen">CourseDetailsScreen</a></li><li><a href="global.html#IFrameCard">IFrameCard</a></li><li><a href="global.html#LessonScreen">LessonScreen</a></li><li><a href="global.html#MobileAppNavigator">MobileAppNavigator</a></li><li><a href="global.html#NavBar">NavBar</a></li><li><a href="global.html#NotificationCard">NotificationCard</a></li><li><a href="global.html#ProblemComp">ProblemComp</a></li><li><a href="global.html#TextCard">TextCard</a></li><li><a href="global.html#client">client</a></li><li><a href="global.html#new_request">new_request</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#setAxiosDefaults">setAxiosDefaults</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>navigation/MobileAppNavigator.jsx</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState } from "react";
+import { Route, Switch } from "react-router-dom";
+import MobileNavBar from "../components/MobileNavBar";
+import MobileHomeScreen from "../screens/MobileHomeScreen";
+import ErrorBoundary from "../components/ErrorBoundary";
+
+/**
+ * MobileAppNavigator component
+ *
+ * This component is responsible for rendering the mobile app navigation
+ * and routing to different screens based on the URL.
+ *
+ * @param {object} data - Data object passed from parent component
+ * @param {object} nav - Navigation object passed from parent component
+ *
+ * @returns {React.ReactElement} - The rendered MobileAppNavigator component
+ */
+
+const MobileAppNavigator = ({ data, nav }) => {
+  /**
+   * Get the course object from session storage
+   *
+   * @typdef {object}
+   */
+  const course = localStorage.getItem("single_course")
+    ? JSON.parse(localStorage.getItem("single_course"))
+    : [];
+
+  // console.log(course);
+  // const [course, setCourse] = useState(null);
+  const [activeScreen, setActiveScreen] = useState("section");
+
+  /**
+   * Get the course ID from the URL
+   *
+   * @type {string}
+   */
+  var url = window.location.href;
+  const course_id = url.split("/")[3];
+  // const lesson_id = url.split("/")[5];
+
+  /**
+   * Handle setting the active screen
+   *
+   * @param {string} activeScreen - The new active screen
+   */
+
+  const onHandleSetActiveScreen = (activeScreen) => {
+    setActiveScreen(activeScreen);
+  };
+
+  return (
+    &lt;div className="">
+      &lt;MobileNavBar course={course} />
+      &lt;div className="container-fluid">
+        &lt;div className="row">
+          &lt;div className="col-md-12 py-3 px-0">
+            &lt;ErrorBoundary>
+              &lt;Switch>
+                &lt;Route
+                  path={`/${course_id}/lesson/:lesson_id`}
+                  render={(props) => (
+                    &lt;MobileHomeScreen
+                      nav={nav}
+                      data={data}
+                      course_id={course_id}
+                      activeScreen={activeScreen}
+                      onHandleSetActiveScreen={onHandleSetActiveScreen}
+                      {...props}
+                    />
+                  )}
+                />
+                &lt;Route
+                  path="/:course_id"
+                  render={(props) => (
+                    &lt;MobileHomeScreen
+                      data={data}
+                      nav={nav}
+                      course_id={course_id}
+                      activeScreen={activeScreen}
+                      onHandleSetActiveScreen={onHandleSetActiveScreen}
+                      {...props}
+                    />
+                  )}
+                />
+                &lt;Route
+                  path="/"
+                  render={(props) => (
+                    &lt;MobileHomeScreen
+                      data={data}
+                      nav={nav}
+                      course_id={course_id}
+                      activeScreen={activeScreen}
+                      onHandleSetActiveScreen={onHandleSetActiveScreen}
+                      {...props}
+                    />
+                  )}
+                />
+              &lt;/Switch>
+            &lt;/ErrorBoundary>
+          &lt;/div>
+        &lt;/div>
+      &lt;/div>
+    &lt;/div>
+  );
+};
+
+export default MobileAppNavigator;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

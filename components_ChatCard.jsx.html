@@ -1,0 +1,450 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> components/ChatCard.jsx</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="ImageCard.html">ImageCard</a></li><li><a href="VideoCard.html">VideoCard</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActivityIndicator">ActivityIndicator</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#AppNavigator">AppNavigator</a></li><li><a href="global.html#BookmarkCard">BookmarkCard</a></li><li><a href="global.html#BookmarkNoteCard">BookmarkNoteCard</a></li><li><a href="global.html#ChatCard">ChatCard</a></li><li><a href="global.html#CourseDetailsScreen">CourseDetailsScreen</a></li><li><a href="global.html#IFrameCard">IFrameCard</a></li><li><a href="global.html#LessonScreen">LessonScreen</a></li><li><a href="global.html#MobileAppNavigator">MobileAppNavigator</a></li><li><a href="global.html#NavBar">NavBar</a></li><li><a href="global.html#NotificationCard">NotificationCard</a></li><li><a href="global.html#ProblemComp">ProblemComp</a></li><li><a href="global.html#TextCard">TextCard</a></li><li><a href="global.html#client">client</a></li><li><a href="global.html#new_request">new_request</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#setAxiosDefaults">setAxiosDefaults</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>components/ChatCard.jsx</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState } from "react";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
+import CommentsService from "../services/comments";
+import Collapse from "react-bootstrap/Collapse";
+import dayjs from "dayjs";
+import { formatDateTime } from "../helpers/utilities";
+var relativeTime = require("dayjs/plugin/relativeTime");
+var updateLocale = require("dayjs/plugin/updateLocale");
+
+
+/**
+ * A functional component representing a chat card which displays comments and reactions.
+ *
+ * @param {Object} props - The props object.
+ * @param {number} props.index - The index of the comment in the list.
+ * @param {string} props.id - The unique identifier for the comment.
+ * @param {string} props.username - The username of the person who posted the comment.
+ * @param {string} props.datePosted - The date and time when the comment was posted.
+ * @param {string} props.comment - The text of the comment.
+ * @param {number} props.likes - The number of likes for the comment.
+ * @param {number} props.dislikes - The number of dislikes for the comment.
+ * @param {Function} props.setReplyToComment - Function to set the comment to which a reply is being made.
+ * @param {Array} props.replies - An array of replies to the comment.
+ * @returns {JSX.Element} The rendered ChatCard component.
+ */
+
+
+const ChatCard = ({
+  index,
+  id,
+  username,
+  datePosted,
+  comment,
+  likes,
+  dislikes,
+  setReplyToComment,
+  replies,
+}) => {
+  // state = {};
+
+  // const  = this.props;
+
+  const [loading, setLoading] = useState(false);
+  const [reactionsToDate, setReactionsToDate] = useState(null);
+  const [showReplies, setShowReplies] = useState(false);
+  // const [repliesReactionsToDate, setRepliesReactionsToDate] = useState(null);
+
+  dayjs.extend(relativeTime);
+  dayjs.extend(updateLocale);
+
+  dayjs.updateLocale("en", {
+    relativeTime: {
+      future: "in %s",
+      past: "%s ago",
+      s: "few sec",
+      m: "1 min",
+      mm: "%d min",
+      h: "1 hr",
+      hh: "%d hrs",
+      d: "1 day",
+      dd: "%d days",
+      M: "a mon",
+      MM: "%d mon",
+      y: "a yr",
+      yy: "%d yrs",
+    },
+  });
+
+  // console.log("ChatCard ID", id);
+
+  async function comment_reaction(reaction) {
+    // This function makes the API call to like or dislike a comment
+    setLoading(true);
+    CommentsService.like_dislike_comment(id, reaction)
+      .then((response) => {
+        console.log("reactToComment", response);
+        setReactionsToDate(response?.reactions_to_date);
+        //  handleCommentLoad(response?.page_id);
+        setLoading(false);
+      })
+      .catch(function (error) {
+        console.log("reactToComment error");
+        console.log(error);
+        setLoading(false);
+      });
+  }
+
+  const setReplyCommentID = (comment_id) => {
+    // This function sets the comments data to be replied to
+    console.log("comment_id", comment_id);
+    setReplyToComment({ comment_id: comment_id, comment: comment });
+  };
+
+  return (
+
+    &lt;div className="mb-1">
+
+      {index > 0 &amp;&amp; &lt;hr className="m-0" style={{ borderTop: "1px #979797 solid" }} />}
+
+
+      &lt;div className="p-2">
+        &lt;small>
+          &lt;div className="card-title fw-bold mb-0">
+            {username}
+            {/* &lt;small className="float-end text-muted">{datePosted}&lt;/small> */}
+          &lt;/div>
+        &lt;/small>
+
+        &lt;small>
+          &lt;div className="card-text">{comment}&lt;/div>
+        &lt;/small>
+
+        {/* &lt;hr className="my-1 text-muted" /> */}
+      &lt;/div>
+
+      &lt;div>
+        {loading &amp;&amp; (
+          &lt;div className="lds-ring-13">
+            &lt;div>&lt;/div>
+            &lt;div>&lt;/div>
+            &lt;div>&lt;/div>
+            &lt;div>&lt;/div>
+          &lt;/div>
+        )}
+
+        {!loading &amp;&amp; (
+          &lt;OverlayTrigger
+            overlay={&lt;Tooltip id="tooltip-disabled">Like&lt;/Tooltip>}
+          >
+            &lt;small
+              className="text-success pe-1 cursor-pointer"
+              onClick={() => comment_reaction("L")}
+            >
+              {reactionsToDate ? reactionsToDate?.likes : likes ?? 0}
+              &lt;small>
+                &lt;i className="bi bi-hand-thumbs-up-fill">&lt;/i>
+              &lt;/small>
+            &lt;/small>
+          &lt;/OverlayTrigger>
+        )}
+
+        {!loading &amp;&amp; (
+          &lt;OverlayTrigger
+            overlay={&lt;Tooltip id="tooltip-disabled">Dislike&lt;/Tooltip>}
+          >
+            &lt;small
+              className="text-danger px-1 cursor-pointer"
+              onClick={() => comment_reaction("D")}
+            >
+              {reactionsToDate ? reactionsToDate?.dislikes : dislikes ?? 0}
+              &lt;small>
+                &lt;i className="bi bi-hand-thumbs-down-fill">&lt;/i>
+              &lt;/small>
+            &lt;/small>
+          &lt;/OverlayTrigger>
+        )}
+
+        {!loading &amp;&amp; (
+          &lt;OverlayTrigger
+            overlay={&lt;Tooltip id="tooltip-disabled">Reply&lt;/Tooltip>}
+          >
+            &lt;span
+              className="text-primary ps-1 cursor-pointer"
+              onClick={() => setReplyCommentID(id)}
+            >
+              &lt;i className="bi bi-reply-fill">&lt;/i>
+            &lt;/span>
+          &lt;/OverlayTrigger>
+        )}
+
+        &lt;span className="float-end ">
+          &lt;OverlayTrigger
+            overlay={
+              &lt;Tooltip id="tooltip-disabled">
+                {formatDateTime(datePosted)}
+              &lt;/Tooltip>
+            }
+          >
+            &lt;small className="text-muted" style={{ cursor: "default" }}>
+              {dayjs(datePosted).fromNow()}
+            &lt;/small>
+          &lt;/OverlayTrigger>
+          {replies.length > 0 &amp;&amp; (
+            &lt;small>
+              &lt;small>
+                &lt;span
+                  className="text-success cursor-pointer fw-bold ms-1"
+                  onClick={() => setShowReplies(!showReplies)}
+                >
+                  Replies{" "}
+                  {showReplies ? (
+                    &lt;i className="bi bi-chevron-up">&lt;/i>
+                  ) : (
+                    &lt;i className="bi bi-chevron-down">&lt;/i>
+                  )}
+                &lt;/span>
+              &lt;/small>
+            &lt;/small>
+          )}
+        &lt;/span>
+
+
+
+      &lt;/div>
+
+      {/* REPLIES STARTS */}
+      {replies.length > 0 &amp;&amp; (
+        &lt;div>
+          {/* &lt;hr className="my-1 text-muted" /> */}
+
+          {/* &lt;div className="text-end">
+              &lt;small>
+                &lt;small>
+                  &lt;span
+                    className="text-success cursor-pointer fw-bold"
+                    onClick={() => setShowReplies(!showReplies)}
+                  >
+                    {showReplies ? "Hide Replies" : "Show Replies"}
+                  &lt;/span>
+                &lt;/small>
+              &lt;/small>
+            &lt;/div> */}
+
+          &lt;Collapse in={showReplies}>
+            &lt;div>{replies.map((reply, index) => ReplyChatCard(reply))}&lt;/div>
+          &lt;/Collapse>
+        &lt;/div>
+      )}
+
+      {/* REPLIES ENDS */}
+    &lt;/div>
+
+  );
+};
+
+export default ChatCard;
+
+const ReplyChatCard = (reply) => {
+  const [loading, setLoading] = useState(false);
+  const [reactionsToDate, setReactionsToDate] = useState(null);
+
+  async function reactToCommentReply(reply_id, reaction) {
+    // This function makes the API call to like or dislike a comment' reply
+    setLoading(true);
+    CommentsService.like_dislike_comment_reply(reply_id, reaction)
+      .then((response) => {
+        console.log("reactToCommentReply", response);
+        setReactionsToDate(response?.reactions_to_date);
+        setLoading(false);
+      })
+      .catch(function (error) {
+        console.log("reactToCommentReply error");
+        console.log(error);
+        setLoading(false);
+      });
+  }
+
+  return (
+    &lt;div id={reply?.id} key={reply?.id} className="ms-4 mb-1 pt-1">
+      &lt;div className="p-1">
+      &lt;hr className="m-0" style={{ borderTop: "1px #979797 solid" }} /> 
+        {/* {index > 0 &amp;&amp; &lt;hr className="my-1 text-muted" />} */}
+        &lt;small>
+          &lt;div className="fw-bold mb-0 ">
+            {reply?.user_id?.first_name}
+            {/* &lt;small className="float-end text-muted">{datePosted}&lt;/small> */}
+          &lt;/div>
+        &lt;/small>
+        &lt;small>
+          &lt;div className="card-text">{reply?.reply}&lt;/div>
+        &lt;/small>
+      &lt;/div>
+
+      &lt;div>
+        {loading &amp;&amp; (
+          &lt;div className="lds-ring-13">
+            &lt;div>&lt;/div>
+            &lt;div>&lt;/div>
+            &lt;div>&lt;/div>
+            &lt;div>&lt;/div>
+          &lt;/div>
+        )}
+
+        {!loading &amp;&amp; (
+          &lt;OverlayTrigger
+            overlay={&lt;Tooltip id="tooltip-disabled">Like&lt;/Tooltip>}
+          >
+            &lt;small
+              className="text-success pe-1 cursor-pointer"
+              onClick={() => reactToCommentReply(reply?.id, "L")}
+            >
+              {reactionsToDate ? reactionsToDate?.likes : reply?.likes ?? 0}
+              &lt;small>
+                &lt;i className="bi bi-hand-thumbs-up-fill">&lt;/i>
+              &lt;/small>
+            &lt;/small>
+          &lt;/OverlayTrigger>
+        )}
+
+        {!loading &amp;&amp; (
+          &lt;OverlayTrigger
+            overlay={&lt;Tooltip id="tooltip-disabled">Dislike&lt;/Tooltip>}
+          >
+            &lt;small
+              className="text-danger px-1 cursor-pointer"
+              onClick={() => reactToCommentReply(reply?.id, "D")}
+            >
+              {reactionsToDate
+                ? reactionsToDate?.dislikes
+                : reply?.dislikes ?? 0}
+              &lt;small>
+                &lt;i className="bi bi-hand-thumbs-down-fill">&lt;/i>
+              &lt;/small>
+            &lt;/small>
+          &lt;/OverlayTrigger>
+        )}
+        &lt;OverlayTrigger
+          overlay={
+            &lt;Tooltip id="tooltip-disabled">
+              {formatDateTime(reply?.updated_at)}
+            &lt;/Tooltip>
+          }
+        >
+          &lt;small className="float-end text-muted" style={{ cursor: "default" }}>
+            {/* {formatDateTime(reply?.updated_at)} */}
+            {dayjs(reply?.updated_at).fromNow()}
+          &lt;/small>
+        &lt;/OverlayTrigger>
+      &lt;/div>
+    &lt;/div>
+  );
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

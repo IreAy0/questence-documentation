@@ -1,0 +1,473 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> screens/LessonScreen.js</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="ImageCard.html">ImageCard</a></li><li><a href="VideoCard.html">VideoCard</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ActivityIndicator">ActivityIndicator</a></li><li><a href="global.html#App">App</a></li><li><a href="global.html#AppNavigator">AppNavigator</a></li><li><a href="global.html#BookmarkCard">BookmarkCard</a></li><li><a href="global.html#BookmarkNoteCard">BookmarkNoteCard</a></li><li><a href="global.html#ChatCard">ChatCard</a></li><li><a href="global.html#CourseDetailsScreen">CourseDetailsScreen</a></li><li><a href="global.html#IFrameCard">IFrameCard</a></li><li><a href="global.html#LessonScreen">LessonScreen</a></li><li><a href="global.html#MobileAppNavigator">MobileAppNavigator</a></li><li><a href="global.html#NavBar">NavBar</a></li><li><a href="global.html#NotificationCard">NotificationCard</a></li><li><a href="global.html#ProblemComp">ProblemComp</a></li><li><a href="global.html#TextCard">TextCard</a></li><li><a href="global.html#client">client</a></li><li><a href="global.html#new_request">new_request</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#setAxiosDefaults">setAxiosDefaults</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>screens/LessonScreen.js</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useEffect, useState } from "react";
+// import { Field } from "formik";
+// import { Form } from "../components/FormElements";
+
+import TextCard from "../components/TextCard";
+import VideoCard from "../components/VideoCard";
+import VideoCardZM from "../components/VideoCardZM";
+// import Divider from "../components/Divider";
+// import LessonFooter from "../components/LessonFooter";
+
+// import CoursesService from "../services/courses";
+import ActivityIndicator from "../components/ActivityIndicator";
+import ProblemComp from "../components/ProblemComp";
+import ImageCard from "../components/ImageCard";
+import IFrameCard from "../components/IFrameCard";
+import ModalAddBookmarkNote from "../components/ModalAddBookmarkNote";
+// import Footer from "../components/Footer";
+import { useSelector } from "react-redux";
+import { dashboardSettings } from "../store/slices/settingsSlice";
+// import DocCard from "../components/DocCard";
+// import Audio from "../components/AudioCard";
+
+/**
+ * LessonScreen component that displays course lesson content.
+ *
+ * @param {Object} props - Component properties.
+ * @param {Function} props.handleShowComments - Function to show comments.
+ * @param {Array} props.comments - Array of comments related to the lesson.
+ * @param {Function} props.onBookmarkNoteEditDelete - Function for editing/deleting bookmark notes.
+ * @param {Object} props.data - Basic course data.
+ * @param {string} props.courseId - ID of the course.
+ * @returns {JSX.Element} The rendered component.
+ */
+
+const LessonScreen = ({
+  handleShowComments,
+  comments,
+  onBookmarkNoteEditDelete,
+  data: courseBasic,
+  courseId,
+}) => {
+  const [lesson, setLesson] = useState([]);
+
+  const [showModal, setShowModal] = useState(false);
+
+  const [loading, setLoading] = useState(true);
+  // const [lessonContent, setLessonContent] = useState([]);
+
+  var url = window.location.href;
+  const course = url.split("/")[3];
+  const lesson_id = url.split("/")[6];
+  const {settings} = useSelector(dashboardSettings)
+
+  const closeModal = () => setShowModal(false);
+
+  // const handleBookmarkSubmit = (values) => {
+  //   setLoading(true);
+  //   let form = [];
+  //   let note = JSON.parse(values);
+  //   let course_id = localStorage.getItem("course_id");
+  //   let lms_user_id = localStorage.getItem("lms_user_id");
+  //   let bookmarked = true;
+  //   form.push({
+  //     note: note.note,
+  //     bookmarked: true,
+  //     user: lms_user_id,
+  //     course: course_id,
+  //     lesson_id: lesson_id,
+  //   });
+  //   // setShowModal(false);
+  //   OthersService.add_bookmark(
+  //     note.note,
+  //     bookmarked,
+  //     lms_user_id,
+  //     course_id,
+  //     lesson_id
+  //   )
+  //     .then((response) => {
+  //       setLoading(false);
+  //       console.log(response);
+  //     })
+  //     .catch(function (error) {
+  //       console.log(error);
+  //     });
+  // };
+
+  // const showComments = (value) => {
+  //   handleShowComments(value);
+  // };
+
+    /**
+   * Formats the question object for API submission.
+   *
+   * @param {Object} question - The question object to format.
+   * @returns {Object} The formatted answer object.
+   */
+
+  const formatAnsObject = (question) => {
+    // ----- This function formats each object in the `ans` array of the initial data required by the use-from hook into the correct format required by the API endpoint for submission ----- //
+
+    let ansObject = {};
+
+    if (question?.type === "ES") {
+      ansObject = { q_no: `${question?.question_no}`, ans_essay: null };
+    }
+    // else if (question?.type === "DT") {
+    //   ansObject = { q_no: `${question?.question_no}`, ans_text: null };
+    // }
+    else {
+      ansObject = { q_no: `${question?.question_no}`, ans_text: null };
+    }
+
+    return ansObject;
+  };
+
+  
+  /**
+   * Sets the initial data for the form based on the content.
+   *
+   * @param {Object} content - The content object containing questions.
+   * @returns {Object} The initial data for the form.
+   */
+  
+  const setFormInitialData = (content) => {
+    const ansArray = content?.questions?.map(formatAnsObject) || [];
+
+    return {
+      c_id: content?.id || null,
+      e_id: localStorage.getItem("enrollment_id") || null,
+      ans: ansArray,
+    };
+  };
+
+  // const getTotalComments = (comments) => {
+  //   //This function gets the length of the comments including the replies of the main comments
+  //   let totalComments = 0;
+
+  //   for (let index = 0; index &lt; comments.length; index++) {
+  //     //Adding the mains comments
+  //     totalComments++;
+
+  //     if (comments[index]?.reply_belonging_to_comment.length > 0) {
+  //       //Adding the reply (sub) comments
+
+  //       for (
+  //         let indexReply = 0;
+  //         indexReply &lt; comments[index]?.reply_belonging_to_comment.length;
+  //         indexReply++
+  //       ) {
+  //         totalComments++;
+  //       }
+  //     }
+  //   }
+
+  //   return totalComments;
+  // };
+
+  // console.log(answers);
+
+  useEffect(() => {
+    // let courseOutline = JSON.parse(localStorage.getItem("course_outline"));
+    // let courseContent = JSON.parse(localStorage.getItem("course_contents"));
+    let index = courseBasic?.filter((el) => {
+      return el.id === lesson_id;
+    });
+
+    // let courseIndex = courseBasic?.filter((el) => {
+    //   return el.id === lesson_id;
+    // });
+
+    setLesson(index[0]);
+    setLoading(false);
+    // setLessonContent(courseIndex[0].components);
+
+    //Moved code from top
+    // const problemComponent = lessonContent.find(
+    //   (el) => el.component_type === "EX"
+    // );
+    // if (problemComponent !== undefined) {
+    //   setForms(problemComponent.questions);
+    //   const answers = problemComponent.response[0].answers
+    //     ? problemComponent.response[0].answers
+    //     : [];
+    //   setUserAnswers(answers);
+    //   localStorage.setItem("answers" + problemComponent.id, answers);
+
+    //   setIsSubmitted(problemComponent.response[0].c_ans);
+    //   console.log(problemComponent.response[0].c_ans);
+    // }
+  }, [lesson_id, courseBasic]);
+
+  console.log('lesson?.component_belonging_to_page', lesson?.component_belonging_to_page)
+  // lessonContent
+  return (
+    &lt;>
+      {/* &lt;div className="px-4 py-3 bg-white shadow-sm mb-5"> */}
+      {
+
+        
+        &lt;>
+          &lt;ActivityIndicator visible={loading} />
+          {lesson &amp;&amp; (
+            &lt;div 
+            className={`${settings.background_colour !== 'white' ? 'rounded-3' : ''}`}
+            style={{
+              // paddingTop: "2rem",
+              // marginTop: '.5rem',
+              boxShadow: settings.background_colour !== 'white' &amp;&amp;  '0px 0.7px 0.7px 0px #1E1E1E40',
+              backgroundColor: settings.detailsWindow.details_title_background
+            }}
+            >
+            &lt;h5
+              className="card-title px-4 pt-2  pb-2 d-inline-block color-primary fw-semibold text-capitalize"
+              key={lesson.id}
+            >
+              {lesson.title}
+            &lt;/h5>
+            &lt;/div>
+           
+          )}
+          &lt;div 
+            className={`${settings.background_colour !== 'white' ? 'rounded-3' : ''}`}
+            style={{
+              // paddingTop: "2rem",
+              marginTop: '.5rem',
+              boxShadow: settings.background_colour !== 'white' &amp;&amp;  '0px 0.7px 0.7px 0px #1E1E1E40',
+              backgroundColor: settings.detailsWindow.background_colour
+            }}
+          >
+          {lesson?.component_belonging_to_page?.map(
+            (content, i) =>
+              (content.component_type === "IM" &amp;&amp; (
+                &lt;div key={i}>
+                  &lt;div className="row mx-0 mb-4">
+                    &lt;div className="card p-0 border-0 ">
+                      &lt;ImageCard
+                        content={content.url}
+                        position={content.image_position}
+                        style={{ marginTop: "1rem" }}
+                      />
+                      &lt;p  dangerouslySetInnerHTML={{ __html: content?.footer_html }}>&lt;/p>
+                      {/* &lt;img height={300} width={600} src={content.image_url} /> */}
+                    &lt;/div>
+                  &lt;/div>
+                &lt;/div>
+              )) ||
+              (content.component_type === "HT" &amp;&amp; content.content_html &amp;&amp; (
+                &lt;div key={i}>
+                  &lt;div className="col-md-9 mx-auto offset-md-1 mb-4">
+                    &lt;div className="card pb-0 border-0">
+                      &lt;TextCard
+                        myClasses="fs-5 mt-2 html_width"
+                        content={content.content_html}
+                      />
+                    &lt;/div>
+                  &lt;/div>
+                &lt;/div>
+              )) ||
+              (content.component_type === "HT" &amp;&amp; content.html_url &amp;&amp; (
+                &lt;div key={i}>
+                  &lt;div className="row mb-4">
+                    &lt;div className="card border-0 ">
+                      &lt;IFrameCard url={content.html_url} id={content.id} />
+                    &lt;/div>
+                  &lt;/div>
+                &lt;/div>
+              )) ||
+              (content.component_type === "VI" &amp;&amp; (
+                &lt;div key={i}>
+                  {content.video_type === "YO" &amp;&amp; (
+                    &lt;div className="col-md-12 mb-4 video_card" key={content.id} >
+                      &lt;div className=" p-0 border-0 mt-2">
+                        &lt;VideoCard url={content.url} />
+                      &lt;/div>
+                      {/* &lt;Divider /> */}
+                    &lt;/div>
+                  )}
+                  {content.video_type === "VI" &amp;&amp; (
+                    &lt;div className="col-md-12 mb-4 video_card" key={content.id} >
+                      &lt;div className="card border-0 mt-2">
+                        &lt;VideoCard url={content.url} />
+                      &lt;/div>
+                      {/* &lt;Divider /> */}
+                    &lt;/div>
+                  )}
+                  {content.video_type === "MZ" &amp;&amp; (
+                    &lt;div className="col-md-12 mb-4 video_card" key={content.id} >
+                      &lt;div className=" pb-0 border-0  mt-3">
+                        &lt;VideoCardZM data={content} />
+                      &lt;/div>
+                      {/* &lt;Divider /> */}
+                    &lt;/div>
+                  )}
+                &lt;/div>
+              )) ||
+              (content.component_type === "EX" &amp;&amp; (
+                &lt;div key={i}>
+                  &lt;div className="col-md-12 mb-4" key={content.id}>
+                    {content &amp;&amp; (
+                      &lt;ProblemComp
+                        content={content}
+                        course={course}
+                        formInitialData={setFormInitialData(content)}
+                        key={content.id}
+                      />
+                    )}
+                    {/* &lt;Divider /> */}
+                  &lt;/div>
+                &lt;/div>
+              )) 
+              // ||
+              // (content.component_type === "DO" &amp;&amp; (
+              //   &lt;div key={i}>
+              //     &lt;div className="col-md-12 mb-4" key={content.id}>
+              //       {content &amp;&amp; (
+              //         &lt;DocCard 
+              //         url={content.url}
+              //         />
+              //       )}
+              //       {/* &lt;Divider /> */}
+              //     &lt;/div>
+              //   &lt;/div>
+              // )) 
+              // (content.component_type === "AO" &amp;&amp; (
+              //   &lt;div key={i}>
+              //     &lt;div className="col-md-12 mb-4" key={content.id}>
+              //       {content &amp;&amp; (
+              //        &lt;Audio src={content.src} />
+              //       )}
+              //       {/* &lt;Divider /> */}
+              //     &lt;/div>
+              //   &lt;/div>
+              // ))
+          )}
+          &lt;/div>
+         
+
+          {/* &lt;Footer /> */}
+          {/* &lt;LessonFooter
+            commentCount={getTotalComments(comments)}
+            handleShowComments={showComments}
+          /> */}
+
+          &lt;ModalAddBookmarkNote
+            showModal={showModal}
+            closeModal={closeModal}
+            loadBookmarkNote={onBookmarkNoteEditDelete}
+          />
+        &lt;/>
+      }
+      {/* &lt;/div> */}
+    &lt;/>
+  );
+};
+
+export default LessonScreen;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.3</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>
